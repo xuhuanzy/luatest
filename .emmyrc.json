@@ -1,0 +1,40 @@
+{
+  "codeLens": {
+    "enable": false
+  },
+  "diagnostics": {
+    "disable": [
+      "unnecessary-if",
+      "unnecessary-assert"
+    ],
+    "enables": [
+      "incomplete-signature-doc",
+      "missing-global-doc"
+    ]
+  },
+  "documentColor": {
+    "enable": false
+  },
+  "hint": {
+    "enable": true,
+    "localHint": true,
+    "overrideHint": true,
+    "paramHint": true
+  },
+  "references": {
+    "fuzzySearch": false
+  },
+  "strict": {
+    "arrayIndex": false,
+    "docBaseConstMatchBaseType": true,
+    "metaOverrideFileDefine": true,
+    "requirePath": true
+  },
+  "workspace": {
+    "enableReindex": true,
+    "packageDirs": [
+      "${luarocks}/luaassert"
+    ],
+    "reindexDuration": 5000
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "emmylua.ls.executablePath": "D:\\Workspace\\tools\\lua-analyzer\\VSCode-EmmyLua\\server\\emmylua_ls.exe",
+    "emmylua.ls.startParameters": [
+        "--log-level",
+        "debug"
+    ],
+}
