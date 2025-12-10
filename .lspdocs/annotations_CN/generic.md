@@ -6,6 +6,29 @@
 
 ```lua
 ---@generic <泛型名1>[: <约束类型1>] [, <泛型名2>[: <约束类型2>]...]
+function <函数名>(...)
+    ...
+end
+
+---@class <类名>[<<泛型名1>>[: <约束类型1>] [, <<泛型名2>>[: <约束类型2>]...]]
+```
+
+### 条件泛型
+
+与`TS`高度类似, 区别在于`:`->`and`, `=>`->`or`
+
+```lua
+--- Get the parameters of a function as a tuple
+---@alias Parameters<T extends function> T extends (fun(...: infer P): any) and P or never
+
+--- Get the parameters of a constructor as a tuple
+---@alias ConstructorParameters<T> T extends new (fun(...: infer P): any) and P or never
+
+---@alias ReturnType<T extends function> T extends (fun(...: any): infer R) and R or any
+
+--- Make all properties in T optional
+---@alias Partial<T> { [P in keyof T]?: T[P]; }
+
 ```
 
 ## 示例

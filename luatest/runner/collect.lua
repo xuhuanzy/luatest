@@ -1,6 +1,7 @@
 -- 测试收集器
 -- 实现 describe, test, it 等 API
 -- 管理全局收集上下文
+---@namespace Luatest
 
 ---@type Suite? 当前正在定义的 Suite
 local currentSuite = nil
@@ -39,50 +40,8 @@ local function popSuite()
     currentSuite = suiteStack[#suiteStack]
 end
 
--- 创建 Suite
----@param name string Suite 名称
----@param fn fun() Suite 定义函数
----@return Suite
-local function createSuite(name, fn)
-    ---@type Suite
-    local suite = {
-        id = generateId(),
-        name = name,
-        type = "suite",
-        mode = "run",
-        file = currentFile,
-        tasks = {},
-        beforeAllHooks = {},
-        afterAllHooks = {},
-        beforeEachHooks = {},
-        afterEachHooks = {},
-    }
-    return suite
-end
 
--- 创建 Test
----@param name string 测试名称
----@param fn fun(context: TestContext) 测试函数
----@return Test
-local function createTest(name, fn)
-    if not currentSuite then
-        error("test() must be called inside describe()", 2)
-    end
 
-    ---@type Test
-    local test = {
-        id = generateId(),
-        name = name,
-        type = "test",
-        mode = "run",
-        file = currentFile,
-        suite = currentSuite,
-        fn = fn,
-        context = {},
-        timeout = 5000,
-    }
-    return test
-end
 
 -- describe API
 ---@param name string Suite 名称
