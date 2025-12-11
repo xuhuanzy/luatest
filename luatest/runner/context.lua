@@ -52,5 +52,13 @@ export.collectTask = function(task)
     end
 end
 
+---@param suite SuiteCollector
+---@param fn function
+function export.runWithSuite(suite, fn)
+    local prev = collectorContext.currentSuite
+    collectorContext.currentSuite = suite
+    fn()
+    collectorContext.currentSuite = prev
+end
 
 return export

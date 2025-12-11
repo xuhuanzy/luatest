@@ -34,6 +34,9 @@ local function selectValue(v1, ...)
     if v1 ~= nil then
         return v1
     end
+    if ... == nil then
+        return nil
+    end
     return selectValue(...)
 end
 exprot.selectValue = selectValue

@@ -6,9 +6,20 @@ local setFn = require("luatest.runner.map").setFn
 local getHooks = require("luatest.runner.map").getHooks
 local createContext = require("luatest.runner.context").createContext
 local collectTask = require("luatest.runner.context").collectTask
+local beforeEach = require("luatest.runner.hooks").beforeEach
+local afterEach = require("luatest.runner.hooks").afterEach
+local beforeAll = require("luatest.runner.hooks").beforeAll
+local afterAll = require("luatest.runner.hooks").afterAll
+local createChainable = require("luatest.runner.utils.chain")
+local createTaskName = require("luatest.runner.utils.tasks").createTaskName
+local runWithSuite = require("luatest.runner.context").runWithSuite
+local getCurrentTest = require("luatest.runner.test-state").getCurrentTest
 
 
 ---@namespace Luatest
+
+---@export namespace
+local export = {}
 
 ---@type Runner
 local runner
@@ -25,61 +36,90 @@ local function createSuiteHooks()
     }
 end
 
----@type string
-local currentTestFilepath
-
--- ID 计数器
-local idCounter = 0
-
----生成唯一 ID
----@return string
-local function generateId()
-    idCounter = idCounter + 1
-    return tostring(idCounter)
-end
-
----重置 ID 计数器
-local function resetIdCounter()
-    idCounter = 0
-end
-
-
----创建任务的完整名称
----@param parts (string|nil)[]
----@param separator? string
----@return string
-local function createTaskName(parts, separator)
-    local result = {}
-    for _, part in ipairs(parts) do
-        if part and part ~= "" then
-            table.insert(result, part)
-        end
-    end
-    return table.concat(result, separator or " > ")
-end
-
 ---格式化名称
----@param name string|function
+---@param name string | function | table
 ---@return string
 local function formatName(name)
-    if type(name) == 'string' then
+    local nameType = type(name)
+    if nameType == 'string' then
         return name
-    elseif type(name) == 'function' then
-        local info = debug.getinfo(name, "n")
-        return info and info.name or '<anonymous>'
-    else
-        return tostring(name)
+    elseif nameType == 'table' then
+        return name.name or '<anonymous>'
+    elseif nameType == 'function' then
+        return '<anonymous>'
     end
+    return tostring(name)
 end
 
----在指定 suite 上下文中运行函数
----@param collector SuiteCollector
+---@return Runner
+export.getRunner = function()
+    assert(runner, 'not found runner')
+    return runner
+end
+
+---@return SuiteCollector
+local function getCurrentSuite()
+    local currentSuite = collectorContext.currentSuite or defaultSuite
+    assert(currentSuite, 'not found current suite')
+    return currentSuite
+end
+export.getCurrentSuite = getCurrentSuite
+
+
+---@class _Test
+---@field package fn function 内部记录的函数
+---@field skip any
+local TestMeta = {
+    beforeEach = beforeEach,
+    afterEach = afterEach,
+    beforeAll = beforeAll,
+    afterAll = afterAll,
+}
+TestMeta.__index = TestMeta ---@package
+
+---@package
+TestMeta.__call = function(self, context, ...)
+    self.fn(context, ...)
+end
+
+function TestMeta:skipIf(condition)
+    if condition then
+        return self.skip
+    end
+    return self
+end
+
+function TestMeta:runIf(condition)
+    if condition then
+        return self
+    end
+    return self.skip
+end
+
 ---@param fn function
-local function runWithSuite(collector, fn)
-    local prevSuite = collectorContext.currentSuite
-    collectorContext.currentSuite = collector
-    fn()
-    collectorContext.currentSuite = prevSuite
+---@param context? {string: any}
+---@return TestAPI
+local function createTaskCollector(fn, context)
+    local task = setmetatable({
+        fn = fn,
+    }, TestMeta)
+
+    ---@type TestAPI
+    local _test = createChainable({ "sequential", "skip", "only", "todo", "fails" }, task)
+    if context then
+        ---@diagnostic disable-next-line: undefined-field
+        _test:mergeContext(context)
+    end
+
+    return _test
+end
+
+---创建测试
+---@param fn function
+---@param context? {string: any}
+---@return TestAPI
+local function createTest(fn, context)
+    return createTaskCollector(fn, context)
 end
 
 
@@ -105,12 +145,12 @@ end
 
 ---创建 SuiteCollector
 ---@param name string 套件名称
----@param factory? SuiteFactory 工厂函数
+---@param factory? SuiteFactory 工厂函数, 即`describe`定义的函数体
 ---@param mode RunMode 运行模式
 ---@param suiteOptions? TestOptions 套件选项
 ---@return SuiteCollector
 local function createSuiteCollector(name, factory, mode, suiteOptions)
-    factory = factory or function() end
+    factory = factory or function() end ---@type SuiteFactory
 
     ---@type (Test|Suite|SuiteCollector)[]
     local tasks = {}
@@ -240,7 +280,20 @@ local function createSuiteCollector(name, factory, mode, suiteOptions)
     end
 
     ---@type TestAPI
-    local test
+    local test = createTest(function(self, name, optionsOrFn, timeoutOrTest)
+        local args = parseArguments(optionsOrFn)
+        local options = args.options
+        local handler = args.handler
+        if type(suiteOptions) == "table" then
+            options = defaultsTable({}, suiteOptions, options)
+        end
+        options.sequential = self.sequential or (options and options.sequential)
+        local test = task(formatName(name), defaultsTable({
+            handler = handler,
+        }, self, options))
+        test.type = "test"
+        return test
+    end)
 
     --- 清空任务
     local function clear()
@@ -259,10 +312,9 @@ local function createSuiteCollector(name, factory, mode, suiteOptions)
         end
 
         if factory then
-            local prevSuite = collectorContext.currentSuite
-            collectorContext.currentSuite = collector
-            factory(collector.test)
-            collectorContext.currentSuite = prevSuite
+            runWithSuite(collector, function()
+                factory(test)
+            end)
         end
 
         ---@type Task[]
@@ -312,16 +364,17 @@ end
 
 ---@class _Suite
 local SuiteMeta = {}
-SuiteMeta.__index = SuiteMeta
+SuiteMeta.__index = SuiteMeta ---@package
+
 ---@param name string
 ---@param factoryOrOptions SuiteFactory | TestOptions
-SuiteMeta.__call = function(self, name, factoryOrOptions)
+SuiteMeta.__call = function(self, context, name, factoryOrOptions)
     local mode = "run" ---@type RunMode
-    if self.only then
+    if context.only then
         mode = "only"
-    elseif self.skip then
+    elseif context.skip then
         mode = "skip"
-    elseif self.todo then
+    elseif context.todo then
         mode = "todo"
     end
     ---@type SuiteCollector?
@@ -333,20 +386,47 @@ SuiteMeta.__call = function(self, name, factoryOrOptions)
         mode = "todo"
     end
 
-    local isSequentialSpecified = options.sequential or self.sequential
+    local isSequentialSpecified = options.sequential or context.sequential
     -- 从当前套件继承选项
     options = defaultsTable({
-        shuffle = selectValue(self.shuffle, options.shuffle,
+        shuffle = selectValue(context.shuffle, options.shuffle,
             (currentSuite and currentSuite.options and currentSuite.options.shuffle),
             (runner and runner.config.sequence.shuffle)),
     }, currentSuite and currentSuite.options or {}, options)
     ---@cast options TestOptions
     -- 继承套件中的顺序特性
     options.sequential = isSequentialSpecified or options.sequential
+    createSuiteCollector(formatName(name), factory, mode, options)
 end
 
 -- 创建 Suite
 ---@return SuiteAPI
 local function createSuite()
-
+    local suite = setmetatable({}, SuiteMeta)
+    local suiteAPI = createChainable({
+        'sequential', 'shuffle', 'skip', 'only', 'todo'
+    }, suite)
+    return suiteAPI
 end
+
+---@type SuiteAPI
+export.suite = createSuite()
+---@type TestAPI
+export.test = createTest(function(self, name, optionsOrFn)
+    if getCurrentTest() then
+        error(
+            "Calling the test function inside another test function is not allowed. Please put it inside \"describe\" or \"suite\" so it can be properly collected.",
+            2)
+    end
+    ---@diagnostic disable-next-line: undefined-field
+    getCurrentSuite().test.fn(
+        self,
+        formatName(name),
+        optionsOrFn
+    )
+end)
+
+export.describe = export.suite
+export.it = export.test
+
+return export
