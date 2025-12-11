@@ -25,6 +25,8 @@ local export = {}
 local runner
 ---@type SuiteCollector
 local defaultSuite
+---@type string
+local currentTestFilepath
 
 ---@return SuiteHooks
 local function createSuiteHooks()
@@ -35,6 +37,7 @@ local function createSuiteHooks()
         afterEach = {},
     }
 end
+export.createSuiteHooks = createSuiteHooks
 
 ---格式化名称
 ---@param name string | function | table
@@ -64,7 +67,6 @@ local function getCurrentSuite()
     return currentSuite
 end
 export.getCurrentSuite = getCurrentSuite
-
 
 ---@class _Test
 ---@field package fn function 内部记录的函数
@@ -409,10 +411,14 @@ local function createSuite()
     return suiteAPI
 end
 
+---@readonly
 ---@type SuiteAPI
-export.suite = createSuite()
+local suite = createSuite()
+export.suite = suite
+
+---@readonly
 ---@type TestAPI
-export.test = createTest(function(self, name, optionsOrFn)
+local test = createTest(function(self, name, optionsOrFn)
     if getCurrentTest() then
         error(
             "Calling the test function inside another test function is not allowed. Please put it inside \"describe\" or \"suite\" so it can be properly collected.",
@@ -425,8 +431,36 @@ export.test = createTest(function(self, name, optionsOrFn)
         optionsOrFn
     )
 end)
+export.test = test
 
 export.describe = export.suite
 export.it = export.test
+
+
+---@param runner Runner
+---@return SuiteCollector
+local function createDefaultSuite(runner)
+    local collector = suite('', function() end)
+    -- 没有顶级套件
+    collector.suite = nil
+    return collector
+end
+
+---清空收集器上下文
+---@param file File
+---@param currentRunner Runner
+function export.clearCollectorContext(file, currentRunner)
+    if defaultSuite == nil then
+        defaultSuite = createDefaultSuite(currentRunner)
+    end
+    defaultSuite.file = file
+    runner = currentRunner
+    currentTestFilepath = file.filepath
+    for i = #collectorContext.tasks, 1, -1 do
+        collectorContext.tasks[i] = nil
+    end
+    defaultSuite.clear()
+    collectorContext.currentSuite = defaultSuite
+end
 
 return export

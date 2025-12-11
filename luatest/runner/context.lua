@@ -61,4 +61,29 @@ function export.runWithSuite(suite, fn)
     collectorContext.currentSuite = prev
 end
 
+---#region 文件上下文
+
+---@type table<File, table<string, any>>
+local fileContexts = setmetatable({}, { __mode = "k" })
+
+---@param file File
+---@return table<string, any>
+function export.getFileContext(file)
+    local context = fileContexts[file]
+    if not context then
+        error(string.format("Cannot find file context for %s", file.name))
+    end
+    return context
+end
+
+---@param file File
+---@param context table<string, any>
+function export.setFileContext(file, context)
+    fileContexts[file] = context
+end
+
+--#endregion
+
+
+
 return export

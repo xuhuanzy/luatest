@@ -24,7 +24,7 @@ local function isTestCase(s)
 end
 
 ---获取所有测试
----@param suite Task | Task[]
+---@param suite Arrayable<Task>
 ---@return Test[]
 local function getTests(suite)
     local tests = {}
@@ -50,11 +50,11 @@ local function getTests(suite)
     return tests
 end
 
----获取所有任务（扁平化）
----@param tasks Task | Task[]
+---获取所有任务
+---@param tasks Arrayable<Task>
 ---@return Task[]
 local function getTasks(tasks)
-    tasks = tasks or {}
+    tasks = tasks or {} ---@type Arrayable<Task>
     local result = {}
     local arrayTasks = toArray(tasks)
 
@@ -74,7 +74,7 @@ local function getTasks(tasks)
 end
 
 ---获取所有 Suite
----@param suite Task | Task[]
+---@param suite Arrayable<Task>
 ---@return Suite[]
 local function getSuites(suite)
     local result = {}
@@ -113,7 +113,7 @@ local function hasTests(suite)
 end
 
 ---检查是否失败
----@param suite Task | Task[]
+---@param suite Arrayable<Task>
 ---@return boolean
 local function hasFailed(suite)
     local arraySuites = toArray(suite)

@@ -43,7 +43,7 @@
 -- Task 基础类型
 ---@class TaskBase
 ---@field id string 任务唯一标识(基于文件路径和位置生成)
----@field name string 任务名称
+---@field name string 用户提供的任务名称. 如果没有提供, 则为空字符串.
 ---@field type "suite" | "test" | "file" 任务类型
 ---@field mode RunMode 运行模式
 ---@field file string 所属文件路径
@@ -54,7 +54,7 @@
 ---@field location { line: number, column: number, file: string }? 任务位置信息
 ---@field shuffle boolean? 是否随机运行
 ---@field sequential boolean? 是否顺序运行
----@field concurrent boolean? 是否并发运行
+---@field suite Suite? 此任务所属的套件. 文件任务或全局套件将没有父级.
 
 -- Suite 任务类型
 ---@class Suite: TaskBase
@@ -66,8 +66,8 @@
 
 -- File 任务类型
 ---@class File: Suite
----@field type "file"
 ---@field filepath string 文件路径
+---@field projectName string? 该文件所属工作空间项目的名称
 
 ---@class TaskPopulated: TaskBase
 ---@field file File 文件任务, 这是文件的根任务
@@ -117,11 +117,14 @@
 ---@alias SequenceHooks 'stack' | 'list'
 
 ---@class RunnerConfig
----@field root string 项目根目录
+---@field root string
 ---@field retry number 测试失败重试次数, 默认 0
 ---@field testTimeout number 测试超时时间(毫秒), 默认 5000
 ---@field includeTaskLocation boolean? 是否包含任务位置信息
 ---@field sequence { shuffle?: boolean, seed: number, hooks: SequenceHooks, concurrent?: boolean }
+---@field testNamePattern string? 测试名称正则模式
+---@field name string?
+---@field passWithNoTests boolean?
 
 -- Runner 接口
 ---@class Runner

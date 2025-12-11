@@ -1,21 +1,25 @@
 -- luatest 主模块
 -- 导出所有公共 API
 
-local runner_module = require("luatest.runner")
+local runner = require("luatest.runner")
 
-return {
-    -- 测试定义 API
-    describe = runner_module.describe,
-    test = runner_module.test,
-    it = runner_module.it,
+---@export global
+---@class Luatest.Static
+local export = {}
 
-    -- 生命周期钩子
-    beforeAll = runner_module.beforeAll,
-    afterAll = runner_module.afterAll,
-    beforeEach = runner_module.beforeEach,
-    afterEach = runner_module.afterEach,
+---@readonly
+export.describe = runner.describe
+---@readonly
+export.test = runner.test
+---@readonly
+export.it = runner.it
 
-    -- 收集和执行
-    collectTests = runner_module.collectTests,
-    runFiles = runner_module.runFiles,
-}
+export.beforeAll = runner.beforeAll
+export.afterAll = runner.afterAll
+export.beforeEach = runner.beforeEach
+export.afterEach = runner.afterEach
+export.onTestFailed = runner.onTestFailed
+export.onTestFinished = runner.onTestFinished
+
+
+return export
