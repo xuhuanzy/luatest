@@ -398,7 +398,7 @@ SuiteMeta.__call = function(self, context, name, factoryOrOptions)
     ---@cast options TestOptions
     -- 继承套件中的顺序特性
     options.sequential = isSequentialSpecified or options.sequential
-    createSuiteCollector(formatName(name), factory, mode, options)
+    return createSuiteCollector(formatName(name), factory, mode, options)
 end
 
 -- 创建 Suite
