@@ -463,4 +463,10 @@ function export.clearCollectorContext(file, currentRunner)
     collectorContext.currentSuite = defaultSuite
 end
 
+---获取默认套件
+---@return SuiteCollector
+function export.getDefaultSuite()
+    return defaultSuite
+end
+
 return export

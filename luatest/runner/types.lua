@@ -125,22 +125,23 @@
 ---@field testNamePattern string? 测试名称正则模式
 ---@field name string?
 ---@field passWithNoTests boolean?
+---@field allowOnly boolean?
 
 -- Runner 接口
 ---@class Runner
 ---@field config RunnerConfig 配置对象
----@field importFile fun(filepath: string, source: "collect" | "setup"): any 导入测试文件
----@field onBeforeCollect fun(paths: string[])? 收集测试前的回调
----@field onCollectStart fun(file: File)? 文件任务创建后但未收集时的回调
----@field onCollected fun(files: File[])? 收集完成后的回调
----@field onBeforeRunFiles fun(files: File[])? 运行所有文件前的回调
----@field onAfterRunFiles fun(files: File[])? 运行所有文件后的回调
----@field onBeforeRunSuite fun(suite: Suite)? 运行 Suite 前的回调
----@field onAfterRunSuite fun(suite: Suite)? 运行 Suite 后的回调
----@field onBeforeRunTask fun(test: Test)? 运行 Test 前的回调
----@field onAfterRunTask fun(test: Test)? 运行 Test 后的回调
----@field onTaskUpdate fun(task: Task)? 任务更新回调(报告结果)
----@field extendTaskContext fun(context: TestContext): TestContext? 扩展测试上下文
+---@field importFile fun(self:self, filepath: string, source: "collect" | "setup"): any 导入测试文件
+---@field onBeforeCollect fun(self:self, paths: string[])? 收集测试前的回调
+---@field onCollectStart fun(self:self, file: File)? 文件任务创建后但未收集时的回调
+---@field onCollected fun(self:self, files: File[])? 收集完成后的回调
+---@field onBeforeRunFiles fun(self:self, files: File[])? 运行所有文件前的回调
+---@field onAfterRunFiles fun(self:self, files: File[])? 运行所有文件后的回调
+---@field onBeforeRunSuite fun(self:self, suite: Suite)? 运行 Suite 前的回调
+---@field onAfterRunSuite fun(self:self, suite: Suite)? 运行 Suite 后的回调
+---@field onBeforeRunTask fun(self:self, test: Test)? 运行 Test 前的回调
+---@field onAfterRunTask fun(self:self, test: Test)? 运行 Test 后的回调
+---@field onTaskUpdate fun(self:self, task: Task)? 任务更新回调(报告结果)
+---@field extendTaskContext fun(self:self, context: TestContext): TestContext? 扩展测试上下文
 
 ---@alias BeforeAllListener fun(suite: Suite|File) 在所有测试前运行的钩子
 
