@@ -142,13 +142,13 @@
 ---@field onAfterRunTask fun(self:self, test: Test)? 在结果和状态都被设置之后被调用
 ---@field onTaskFinished fun(self:self, test: Test)? 测试函数执行完成后的回调 (在 afterEach 之前)
 ---@field onTaskUpdate fun(self:self, task: Task, event: TaskUpdateEvent)? 任务更新回调(报告结果)
----@field extendTaskContext fun(self:self, context: TestContext): TestContext? 扩展测试上下文
+---@field extendTaskContext? fun(self:self, context: TestContext): TestContext? 当为测试定义新上下文时调用, 用于向测试上下文添加自定义属性
 ---@field runSuite? fun(self:self, suite: Suite) 如果定义了此函数, 那么将替代常规的 Suite 分区与处理流程进行调用. "before"与"after"钩子函数将不会被忽略.
 ---@field onBeforeTryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在实际运行测试函数之前被调用
 ---@field runTask? fun(self:self, test: Test)? 如果定义了此函数, 那么将替代常规的测试函数调用流程. "before"与"after"钩子函数将不会被忽略.
 ---@field onAfterTryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在运行测试函数后立即调用, 此时还没有新的状态. 如果测试函数抛出错误, 将不会调用此函数.
 ---@field onAfterRetryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在重试结果确定后调用, 与`onAfterTryTask`不同, 此时测试已经拥有新的状态. 并且所有"after"钩子函数在此时已经被调用.
-
+---@field getWorkerContext? fun(self:self): table<string, any> 获取范围为 worker 的上下文
 
 -- 任务状态更新事件
 ---@alias TaskUpdateEvent

@@ -1,6 +1,6 @@
 ---@namespace Luatest
 
-local processError = require("luatest.utils.error")
+local processError = require("luatest.utils.error").processError
 local setFileContext = require("luatest.runner.context").setFileContext
 local clearCollectorContext = require("luatest.runner.suite").clearCollectorContext
 local createFileTask = require("luatest.runner.utils.collect").createFileTask

@@ -1,0 +1,49 @@
+---@namespace Luatest
+
+---@alias DiffOptionsColor fun(arg: string): string
+
+---@class DiffOptions
+---@field aAnnotation? string 预期值标签
+---@field aColor? DiffOptionsColor 预期值行的颜色
+---@field aIndicator? string 预期值行的行首指示符, 默认是 '-'
+---@field bAnnotation? string 实际值标签
+---@field bColor? DiffOptionsColor 实际值行的颜色
+---@field bIndicator? string 实际值行的行首指示符, 默认是 '+'
+---@field changeColor? DiffOptionsColor 定义在行内发生变化的文本的颜色
+---@field changeLineTrailingSpaceColor? DiffOptionsColor 变更行尾随空格的颜色
+---@field commonColor? DiffOptionsColor 定义`a`和`b`共有行(未发生变化的行)的颜色
+---@field commonIndicator? string 共有行的行首指示符, 默认是 ' '
+---@field commonLineTrailingSpaceColor? DiffOptionsColor 共有行尾随空格的颜色
+---@field contextLines? number 控制差异部分前后显示多少行相同的上下文代码, 默认为 5
+---@field emptyFirstOrLastLinePlaceholder? string 空首行或末行占位符
+---@field includeChangeCounts? boolean 是否在差异报告头部包含变化统计
+---@field omitAnnotationLines? boolean 是否省略注释行
+---@field patchColor? DiffOptionsColor 定义补丁信息(文件头信息等)的颜色
+---@field maxDepth? number 在比较对象或数组时递归比较的最大深度
+---@field compareKeys? fun(a: string, b: string): number 自定义美化输出比较键的函数
+---@field truncateThreshold? number 当差异输出行数超过此阈值时进行截断
+---@field truncateAnnotation? string 截断时显示的提示文本
+---@field truncateAnnotationColor? DiffOptionsColor 截断提示文本的颜色
+
+---@class DiffOptionsNormalized: DiffOptions
+---@field aAnnotation string 预期值标签
+---@field aColor DiffOptionsColor 预期值行的颜色
+---@field aIndicator string 预期值行的行首指示符, 默认是 '-'
+---@field bAnnotation string 实际值标签
+---@field bColor DiffOptionsColor 实际值行的颜色
+---@field bIndicator string 实际值行的行首指示符, 默认是 '+'
+---@field changeColor DiffOptionsColor 定义在行内发生变化的文本的颜色
+---@field changeLineTrailingSpaceColor DiffOptionsColor 变更行尾随空格的颜色
+---@field commonColor DiffOptionsColor 定义`a`和`b`共有行(未发生变化的行)的颜色
+---@field commonIndicator string 共有行的行首指示符, 默认是 ' '
+---@field commonLineTrailingSpaceColor DiffOptionsColor 共有行尾随空格的颜色
+---@field contextLines number 控制差异部分前后显示多少行相同的上下文代码, 默认为 5
+---@field emptyFirstOrLastLinePlaceholder string 空首行或末行占位符
+---@field includeChangeCounts boolean 是否在差异报告头部包含变化统计
+---@field omitAnnotationLines boolean 是否省略注释行
+---@field patchColor DiffOptionsColor 定义补丁信息(文件头信息等)的颜色
+---@field maxDepth? number 在比较对象或数组时递归比较的最大深度
+---@field compareKeys? fun(a: string, b: string): number 自定义美化输出比较键的函数
+---@field truncateThreshold number 当差异输出行数超过此阈值时进行截断
+---@field truncateAnnotation string 截断时显示的提示文本
+---@field truncateAnnotationColor DiffOptionsColor 截断提示文本的颜色

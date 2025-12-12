@@ -1,7 +1,5 @@
-local processError = require("luatest.utils.error")
+local processError = require("luatest.utils.error").processError
 ---@namespace Luatest
-
-
 
 ---@export namespace
 local export = {}

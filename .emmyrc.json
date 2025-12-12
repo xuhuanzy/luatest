@@ -32,9 +32,7 @@
   },
   "workspace": {
     "enableReindex": true,
-    "packageDirs": [
-      "${luarocks}/luaassert"
-    ],
+    "packageDirs": [],
     "reindexDuration": 5000
   }
 }
