@@ -20,6 +20,7 @@ local RECEIVED_COLOR = colored.red
 local DIM_COLOR = colored.dim
 
 local MAX_DIFF_STRING_LENGTH = 20000 ---@readonly 最大差异字符串长度
+local DEFAULT_MAX_DEPTH = 20 ---@readonly 默认最大递归深度
 
 ---@export namespace
 local export = {}
@@ -190,11 +191,20 @@ end
 ---@param expected any
 ---@param received any
 ---@param depth integer
+---@param maxDepth integer? 最大递归深度
 ---@return table[], integer, integer
-local function buildDiff(expected, received, depth)
+local function buildDiff(expected, received, depth, maxDepth)
     depth = depth or 0
+    maxDepth = maxDepth or DEFAULT_MAX_DEPTH
     local entries = {}
     local minusCount, plusCount = 0, 0
+
+    -- 超过最大深度时停止递归
+    if depth > maxDepth then
+        tableInsert(entries, { marker = nil, indent = depth, text = "..." })
+        return entries, 0, 0
+    end
+
     if type(expected) ~= "table" or type(received) ~= "table" then
         local minus, plus = appendValueLines(entries, "-", depth, "", expected, false)
         minusCount = minusCount + minus
@@ -239,7 +249,7 @@ local function buildDiff(expected, received, depth)
             if same then
                 appendValueLines(entries, nil, depth + 1, linePrefix, expVal, true)
             elseif type(expVal) == "table" and type(recVal) == "table" then
-                local childEntries, childMinus, childPlus = buildDiff(expVal, recVal, depth + 1)
+                local childEntries, childMinus, childPlus = buildDiff(expVal, recVal, depth + 1, maxDepth)
                 if #childEntries > 0 then
                     childEntries[1].text = linePrefix .. childEntries[1].text
                     ---@diagnostic disable-next-line: need-check-nil
@@ -271,7 +281,9 @@ end
 ---@param options DiffOptions? 差异选项
 ---@return string
 function export.diff(a, b, options)
-    local diffEntries, minusCount, plusCount = buildDiff(a, b, 0)
+    options = options or {}
+    local maxDepth = options.maxDepth or DEFAULT_MAX_DEPTH
+    local diffEntries, minusCount, plusCount = buildDiff(a, b, 0, maxDepth)
     if minusCount == 0 and plusCount == 0 then
         return DIM_COLOR(i18n("比较值在视觉上没有差异"))
     end
