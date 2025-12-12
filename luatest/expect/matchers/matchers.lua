@@ -165,6 +165,46 @@ Assertion.addMethod("toBeInteger", function(self)
     }
 end)
 
+-- 检查实际值是否为 nil
+Assertion.addMethod("toBeNil", function(self)
+    local actual = self._obj
+    local matcherName = "toBeNil"
+    ---@type MatcherHintOptions
+    local options = {
+        isNot = flag(self, "negate"),
+    }
+    local pass = actual == nil
+    return {
+        pass = pass,
+        message = function()
+            return matcherHint(matcherName, nil, '', options) ..
+                "\n\n" ..
+                "Received: " ..
+                printReceived(actual)
+        end,
+    }
+end)
+
+-- 检查实际值是否已定义
+Assertion.addMethod("toBeDefined", function(self)
+    local actual = self._obj
+    local matcherName = "toBeDefined"
+    ---@type MatcherHintOptions
+    local options = {
+        isNot = flag(self, "negate"),
+    }
+    local pass = actual ~= nil
+    return {
+        pass = pass,
+        message = function()
+            return matcherHint(matcherName, nil, '', options) ..
+                "\n\n" ..
+                "Received: " ..
+                printReceived(actual)
+        end,
+    }
+end)
+
 -- 检查数字是否在给定精度范围内相等
 ---@param expected number 预期值
 ---@param precision? integer 精度, 默认值为 `2`
@@ -333,20 +373,38 @@ Assertion.addMethod("toThrowError", function(self, expected)
         error_message = tostring(error_message)
         error_message = error_message:gsub('^.-:%d+: ', '', 1)
     end
-    local expectedType = type(expected)
-    if expectedType == "string" then
-        pass = pass and error_message == expected
-    elseif expectedType == "table" then
-        if type(error_message) == "table" then
-            pass = pass and deepCompare(error_message, expected, true)
-        else
+
+    -- expected 为 nil 时仅检查是否抛出错误
+    if expected ~= nil then
+        local expectedType = type(expected)
+        if expectedType == "string" then
             pass = pass and error_message == expected
+        elseif expectedType == "table" then
+            if type(error_message) == "table" then
+                pass = pass and deepCompare(error_message, expected, true)
+            else
+                pass = pass and error_message == expected
+            end
         end
-    else
-        pass = false
     end
 
     local message = function()
+        if expected == nil then
+            -- 无参数时，仅显示是否抛出错误
+            if pass then
+                return matcherHint(matcherName, nil, '', options)
+                    .. "\n\n"
+                    .. "Expected: not to throw"
+                    .. "\n"
+                    .. "Received: threw " .. printReceived(error_message)
+            else
+                return matcherHint(matcherName, nil, '', options)
+                    .. "\n\n"
+                    .. "Expected: to throw an error"
+                    .. "\n"
+                    .. "Received: function did not throw"
+            end
+        end
         return matcherHint(matcherName, nil, nil, options)
             .. "\n\n" ..
             printDiffOrStringify(error_message, expected, {
