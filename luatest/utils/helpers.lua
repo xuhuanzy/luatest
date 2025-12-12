@@ -6,9 +6,9 @@ local next = next
 ---@namespace Luatest
 
 ---@export namespace
-local exprot = {}
+local export = {}
 
-exprot.NOOP = function() end
+export.NOOP = function() end
 
 
 -- 合并多个表到目标表, 然后返回目标表.
@@ -29,7 +29,7 @@ local function mergeDefaults(target, ...)
     end
     return target
 end
-exprot.mergeDefaults = mergeDefaults
+export.mergeDefaults = mergeDefaults
 
 -- 选择值.
 --
@@ -47,7 +47,7 @@ local function selectValue(v1, ...)
     end
     return selectValue(...)
 end
-exprot.selectValue = selectValue
+export.selectValue = selectValue
 
 
 -- 深拷贝. 会处理元表.
@@ -76,13 +76,13 @@ local function deepCopy(source, deepMate, mark)
     end
     return copy
 end
-exprot.deepCopy = deepCopy
+export.deepCopy = deepCopy
 
 
 -- 检查目标是否有tostring方法
 ---@param object any
 ---@return boolean
-function exprot.hasToString(object)
+function export.hasToString(object)
     return type(object) == "string" or type(rawget(debugGetmetatable(object) or {}, "__tostring")) == "function"
 end
 
@@ -137,6 +137,6 @@ local function deepCompare(t1, t2, ignoreMeta, pairCache)
 
     return true
 end
-exprot.deepCompare = deepCompare
+export.deepCompare = deepCompare
 
-return exprot
+return export
