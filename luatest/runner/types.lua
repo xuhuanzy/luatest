@@ -15,7 +15,7 @@
 ---@field name string                                        -- 套件名称
 ---@field mode RunMode                                       -- 运行模式
 ---@field options? TestOptions                               -- 测试选项
----@field test TestAPI                                       -- test/it API
+---@field test TestAPI                                       -- 与当前套件关联的 `test` API
 ---@field tasks (Test|Suite<ExtraContext>|SuiteCollector<ExtraContext>)[]                -- 子任务列表
 ---@field file? File                                         -- 所属文件
 ---@field suite? Suite                                       -- 父 Suite
@@ -44,7 +44,6 @@
 ---@class TaskBase
 ---@field id string 任务唯一标识(基于文件路径和位置生成)
 ---@field name string 用户提供的任务名称. 如果没有提供, 则为空字符串.
----@field type "suite" | "test" | "file" 任务类型
 ---@field mode RunMode 运行模式
 ---@field file string 所属文件路径
 ---@field result TaskResult? 执行结果
@@ -87,7 +86,7 @@
 -- 任务执行结果
 ---@class TaskResult
 ---@field state TaskState 测试状态
----@field errors table[]? 执行期间的错误列表
+---@field errors any[]? 执行期间的错误列表
 ---@field duration number? 执行时长(毫秒)
 ---@field startTime number? 开始时间戳
 ---@field retryCount number? 实际重试次数
@@ -126,6 +125,7 @@
 ---@field name string?
 ---@field passWithNoTests boolean?
 ---@field allowOnly boolean?
+---@field diffOptions table? diff 选项配置
 
 -- Runner 接口
 ---@class Runner
@@ -139,17 +139,34 @@
 ---@field onBeforeRunSuite fun(self:self, suite: Suite)? 运行 Suite 前的回调
 ---@field onAfterRunSuite fun(self:self, suite: Suite)? 运行 Suite 后的回调
 ---@field onBeforeRunTask fun(self:self, test: Test)? 运行 Test 前的回调
----@field onAfterRunTask fun(self:self, test: Test)? 运行 Test 后的回调
----@field onTaskUpdate fun(self:self, task: Task)? 任务更新回调(报告结果)
+---@field onAfterRunTask fun(self:self, test: Test)? 在结果和状态都被设置之后被调用
+---@field onTaskFinished fun(self:self, test: Test)? 测试函数执行完成后的回调 (在 afterEach 之前)
+---@field onTaskUpdate fun(self:self, task: Task, event: TaskUpdateEvent)? 任务更新回调(报告结果)
 ---@field extendTaskContext fun(self:self, context: TestContext): TestContext? 扩展测试上下文
+---@field runSuite? fun(self:self, suite: Suite) 如果定义了此函数, 那么将替代常规的 Suite 分区与处理流程进行调用. "before"与"after"钩子函数将不会被忽略.
+---@field onBeforeTryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在实际运行测试函数之前被调用
+---@field runTask? fun(self:self, test: Test)? 如果定义了此函数, 那么将替代常规的测试函数调用流程. "before"与"after"钩子函数将不会被忽略.
+---@field onAfterTryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在运行测试函数后立即调用, 此时还没有新的状态. 如果测试函数抛出错误, 将不会调用此函数.
+---@field onAfterRetryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在重试结果确定后调用, 与`onAfterTryTask`不同, 此时测试已经拥有新的状态. 并且所有"after"钩子函数在此时已经被调用.
+
+
+-- 任务状态更新事件
+---@alias TaskUpdateEvent
+---| "test-prepare" 测试准备开始
+---| "test-finished" 测试完成
+---| "test-retried" 测试重试
+---| "test-failed-early" 测试提前失败
+---| "suite-prepare" Suite 准备开始
+---| "suite-finished" Suite 完成
+---| "suite-failed-early" 收集期间失败
 
 ---@alias BeforeAllListener fun(suite: Suite|File) 在所有测试前运行的钩子
 
 ---@alias AfterAllListener fun(suite: Suite|File) 在所有测试后运行的钩子
 
----@alias BeforeEachListener fun(context: TestContext, suite: Suite) 在每个测试前运行的钩子
+---@alias BeforeEachListener<ExtraContext: table> fun(context: TestContext & ExtraContext, suite: Suite) 在每个测试前运行的钩子
 
----@alias AfterEachListener fun(context: TestContext, suite: Suite) 在每个测试后运行的钩子
+---@alias AfterEachListener<ExtraContext: table> fun(context: TestContext & ExtraContext, suite: Suite) 在每个测试后运行的钩子
 
 -- 套件钩子集合
 ---@class SuiteHooks<ExtraContext: table>

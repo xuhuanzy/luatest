@@ -3,13 +3,13 @@
 ---@export namespace
 local exprot = {}
 
---- 合并多个表到目标表, 然后返回目标表.
----
---- target 表中已存在的键不会被覆盖. 合并表的顺序是后者的值会覆盖前者的值.
+-- 合并多个表到目标表, 然后返回目标表.
+--
+-- target 表中已存在的键不会被覆盖. 合并表的顺序是后者的值会覆盖前者的值.
 ---@param target table 目标表, 其中已有的键不会被覆盖
 ---@param ... table 要合并的表, 后者的值会覆盖前者的值
 ---@return table target 合并后的表
-local function defaultsTable(target, ...)
+local function mergeDefaults(target, ...)
     local args = { ... }
     -- 反转遍历顺序, 使后者优先级高于前者
     for i = #args, 1, -1 do
@@ -21,11 +21,11 @@ local function defaultsTable(target, ...)
     end
     return target
 end
-exprot.defaultsTable = defaultsTable
+exprot.mergeDefaults = mergeDefaults
 
---- 选择值.
---- 
---- 如果第一个值存在(即不为`nil`), 则返回第一个值, 否则返回第二个值
+-- 选择值.
+--
+-- 如果第一个值存在(即不为`nil`), 则返回第一个值, 否则返回第二个值
 ---@generic T, U
 ---@param v1 T
 ---@param ... U...

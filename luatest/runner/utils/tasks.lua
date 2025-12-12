@@ -94,7 +94,7 @@ local function getSuites(suite)
 end
 
 
----检查是否有测试
+-- 检查是否有测试
 ---@param suite Arrayable<Suite>
 ---@return boolean
 local function hasTests(suite)

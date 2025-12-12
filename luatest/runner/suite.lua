@@ -1,5 +1,5 @@
 local collectorContext = require("luatest.runner.context").collectorContext
-local defaultsTable = require('luatest.utils.utils').defaultsTable
+local mergeDefaults = require('luatest.utils.utils').mergeDefaults
 local selectValue = require('luatest.utils.utils').selectValue
 local setHooks = require("luatest.runner.map").setHooks
 local setFn = require("luatest.runner.map").setFn
@@ -282,15 +282,15 @@ local function createSuiteCollector(name, factory, mode, suiteOptions)
     end
 
     ---@type TestAPI
-    local test = createTest(function(self, name, optionsOrFn, timeoutOrTest)
+    local test = createTest(function(self, name, optionsOrFn)
         local args = parseArguments(optionsOrFn)
         local options = args.options
         local handler = args.handler
         if type(suiteOptions) == "table" then
-            options = defaultsTable({}, suiteOptions, options)
+            options = mergeDefaults({}, suiteOptions, options)
         end
         options.sequential = self.sequential or (options and options.sequential)
-        local test = task(formatName(name), defaultsTable({
+        local test = task(formatName(name), mergeDefaults({
             handler = handler,
         }, self, options))
         test.type = "test"
@@ -390,7 +390,7 @@ SuiteMeta.__call = function(self, context, name, factoryOrOptions)
 
     local isSequentialSpecified = options.sequential or context.sequential
     -- 从当前套件继承选项
-    options = defaultsTable({
+    options = mergeDefaults({
         shuffle = selectValue(context.shuffle, options.shuffle,
             (currentSuite and currentSuite.options and currentSuite.options.shuffle),
             (runner and runner.config.sequence.shuffle)),
