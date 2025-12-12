@@ -314,13 +314,13 @@ function export.printDiffOrStringify(received, expected, options)
         return difference
     end
 
-    local printLabel = export.getLabelPrinter(options.aAnnotation, options.bAnnotation)
+    local printLabel = getLabelPrinter(options.aAnnotation, options.bAnnotation)
 
 
-    local expectedLine = printLabel(options.aAnnotation) .. export.printExpected(expected)
+    local expectedLine = printLabel(options.aAnnotation) .. printExpected(expected)
     local receivedLine = printLabel(options.bAnnotation) .. (stringify(expected) == stringify(received)
         and i18n("序列化为相同字符串")
-        or export.printReceived(received))
+        or printReceived(received))
 
     return expectedLine .. "\n" .. receivedLine
 end

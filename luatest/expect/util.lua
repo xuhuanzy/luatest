@@ -1,7 +1,6 @@
 ---@namespace Luatest
 
-local type = type
-local debugGetmetatable = debug.getmetatable
+local select = select
 
 
 ---@export namespace

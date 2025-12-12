@@ -382,7 +382,7 @@ Assertion.addMethod("toMatch", function(self, expected, plain)
     if type(expected) ~= "string" then
         error(matcherErrorMessage(
             matcherHint(matcherName, nil, nil, options),
-            matcherUtils.RECEIVED_COLOR("received") .. " " .. i18n("值必须是字符串"),
+            matcherUtils.EXPECTED_COLOR("expected") .. " " .. i18n("值必须是字符串"),
             printWithType('Expected', expected, printExpected)
         ))
     end

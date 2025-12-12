@@ -42,8 +42,14 @@ function Assertion.addMethod(name, fn)
     local function wrapAssertionMethod(self, ...)
         local result = fn(self, ...)
         local isNot = flag(self, "negate")
+        -- `not_` 应该只影响一次断言, 避免复用同一个 Assertion 实例时状态泄漏
+        flag(self, "negate", nil)
         if (result.pass and isNot) or (not result.pass and not isNot) then
             local message = result.message and result.message() or RECEIVED_COLOR(i18n("没有为此匹配器指定消息。"))
+            local customMessage = flag(self, "message")
+            if type(customMessage) == "string" and customMessage ~= "" then
+                message = customMessage .. "\n" .. message
+            end
             message = "\n" .. message
             error(message, errorLevel())
         end
