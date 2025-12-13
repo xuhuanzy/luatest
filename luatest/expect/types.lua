@@ -70,3 +70,23 @@
 ---@field objectContaining fun(sample: {[string]: any}): AsymmetricMatcher
 ---@field stringContaining fun(sample: string): AsymmetricMatcher
 ---@field stringMatching fun(sample: string): AsymmetricMatcher
+
+--- 匹配器状态
+---@class MatcherState
+---@field assertionCalls integer 每个`it`块内的断言调用次数
+---@field currentTestName? string 当前测试名称
+---@field dontThrow? fun() 禁止抛出错误的回调
+---@field error? Error 错误信息
+---@field equals EqualsFunction 相等性比较函数
+---@field expand? boolean 是否展开详细信息
+---@field expectedAssertionsNumber? integer 预期断言次数
+---@field expectedAssertionsNumberErrorGen? (fun(): string) 预期断言次数错误生成器
+---@field isExpectingAssertions? boolean 是否正在期待断言
+---@field isExpectingAssertionsError? Error 期待断言错误信息
+---@field isNot boolean 是否取反
+---@field suppressedErrors Error[] 被抑制的错误数组
+---@field testPath? fun(): string 测试文件路径
+---@field soft? boolean 是否为软断言模式
+---@field task? table 当前测试任务(只读)
+
+

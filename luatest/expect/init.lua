@@ -26,10 +26,11 @@ local function use(fn)
     return exports
 end
 
----@class Api
+
+---@class ExpectApi
 ---@export namespace
 local Api = {
-    expect = expect,
+    expect = expect.globalExpect,
     mock = mock,
     use = use,
 }

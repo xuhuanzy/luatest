@@ -10,6 +10,7 @@ local util = {}
 ---@alias InternalFlagKey
 ---| "message" 自定义错误消息, 将会附加到断言错误头部
 ---| "negate" 取反标记
+---| "luatest-test" 当前测试
 
 
 --- 设置或获取对象的标志位.
@@ -34,8 +35,8 @@ local function flag(obj, key, ...)
 end
 util.flag = flag
 
---- 将一个方法添加到一个元表
----@param ctx table 应该为一个元表
+--- 将一个方法添加到表
+---@param ctx table 目标表
 ---@param name string 方法名
 ---@param fn function 方法实现
 function util.addMethod(ctx, name, fn)
