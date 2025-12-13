@@ -160,7 +160,7 @@ local function getFullName(task, separator)
     return table.concat(getNames(task), separator)
 end
 
----获取测试名称
+-- 获取测试名称
 ---@param task Task
 ---@param separator? string
 ---@return string

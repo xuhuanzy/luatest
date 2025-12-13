@@ -19,5 +19,4 @@ local function stringify(object, maxDepth, maxWidth)
 end
 export.stringify = stringify
 
-
 return export

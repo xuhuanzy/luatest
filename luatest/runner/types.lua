@@ -93,6 +93,7 @@
 ---@field repeatCount number? 实际重复次数
 ---@field note string? 测试跳过或失败的注释
 ---@field pending boolean? 是否调用过`context.skip()`跳过任务
+---@field heap number? 测试执行时的内存使用情况, 单位为字节
 
 ---@alias OnTestFailedHandler fun(context: TestContext) 测试失败时的处理函数
 
@@ -149,6 +150,7 @@
 ---@field onAfterTryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在运行测试函数后立即调用, 此时还没有新的状态. 如果测试函数抛出错误, 将不会调用此函数.
 ---@field onAfterRetryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在重试结果确定后调用, 与`onAfterTryTask`不同, 此时测试已经拥有新的状态. 并且所有"after"钩子函数在此时已经被调用.
 ---@field getWorkerContext? fun(self:self): table<string, any> 获取范围为 worker 的上下文
+---@field onCleanupWorkerContext fun(self:self, cleanup: fun())?
 
 -- 任务状态更新事件
 ---@alias TaskUpdateEvent
