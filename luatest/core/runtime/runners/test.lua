@@ -8,6 +8,7 @@ local getTestName = require("luatest.runner.utils.tasks").getTestName
 local restoreAllMocks = require("luatest.spy.mock").restoreAllMocks
 local resetAllMocks = require("luatest.spy.mock").resetAllMocks
 local clearAllMocks = require("luatest.spy.mock").clearAllMocks
+local tu = require("luatest.core.integrations.luatest-utils").tu
 
 local workerContext = {}
 
@@ -16,6 +17,7 @@ local workerContext = {}
 ---@field restoreMocks boolean 恢复所有 mock
 ---@field mockReset boolean 重置所有 mock
 ---@field clearMocks boolean 清空所有 mock
+---@field unstubGlobals boolean 恢复所有以`tu.stubGlobal`设置的全局变量
 
 ---@class LuatestTestRunner: Runner
 ---@field private workerState WorkerGlobalState
@@ -129,6 +131,10 @@ function LuatestTestRunner:clearModuleMocks()
     end
     if config.clearMocks then
         clearAllMocks()
+    end
+
+    if config.unstubGlobals then
+        tu.unstubAllGlobals()
     end
 end
 
