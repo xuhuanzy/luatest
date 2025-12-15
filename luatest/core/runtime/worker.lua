@@ -13,6 +13,8 @@ local globalListeners = {}
 ---@param ctx WorkerContext
 ---@param worker LuatestWorker
 local function execute(method, ctx, worker)
+    -- 此时可以加载一些内部库避免未初始化
+
     ---@type WorkerGlobalState
     local state = {
         ctx = ctx,

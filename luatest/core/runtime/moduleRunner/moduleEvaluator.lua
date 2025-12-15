@@ -46,7 +46,7 @@ local function createIsolatedRequire(isolatedPackageLoaded)
         if not isLuatestInternalModule(moduleName) then
             -- 将模块存入隔离表
             isolatedPackageLoaded[moduleName] = result
-            -- 从全局 package.loaded 移除，保持隔离
+            -- 从全局 package.loaded 移除, 保持隔离
             package.loaded[moduleName] = nil
         end
 
