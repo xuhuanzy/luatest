@@ -1,0 +1,10 @@
+---@namespace Luatest
+
+---@class SerializedConfig
+---@field logHeapUsage number 内存使用情况
+---@field restoreMocks boolean 恢复所有 mock
+---@field mockReset boolean 重置所有 mock
+---@field clearMocks boolean 清空所有 mock
+---@field unstubGlobals boolean 恢复所有以`tu.stubGlobal`设置的全局变量
+---@field bail? integer 当指定数量的测试失败时停止测试执行, 默认不中止
+---@field isolate boolean 隔离运行每个测试文件

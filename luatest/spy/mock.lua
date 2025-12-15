@@ -276,14 +276,13 @@ local function spyOn(object, key)
     local original = object[key]
     assert(type(original) == "function", stringFormat(i18n("spyOn() 仅能用于监视函数. 但收到 '%s'"), type(original)))
 
-    local function restore()
-        object[key] = original
-    end
     local name = type(key) == "string" and key or ("[%q]"):format(tostring(key))
 
     local mockInstance = createMockInstance({
         originalImplementation = original,
-        restore = restore,
+        restore = function ()
+            object[key] = original
+        end,
         captureInstance = defaultCaptureContext,
         name = name,
     })

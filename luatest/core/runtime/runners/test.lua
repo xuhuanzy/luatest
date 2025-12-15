@@ -12,18 +12,13 @@ local tu = require("luatest.core.integrations.luatest-utils").tu
 
 local workerContext = {}
 
----@class SerializedConfig
----@field logHeapUsage number 内存使用情况
----@field restoreMocks boolean 恢复所有 mock
----@field mockReset boolean 重置所有 mock
----@field clearMocks boolean 清空所有 mock
----@field unstubGlobals boolean 恢复所有以`tu.stubGlobal`设置的全局变量
-
 ---@class LuatestTestRunner: Runner
 ---@field private workerState WorkerGlobalState
 ---@field private assertionsErrors table<Task, Error>
 ---@field config SerializedConfig
+---@field moduleRunner ModuleRunner
 local LuatestTestRunner = {}
+---@package
 LuatestTestRunner.__index = LuatestTestRunner
 
 ---@param config SerializedConfig
@@ -37,10 +32,10 @@ function LuatestTestRunner.new(config)
 end
 
 ---@param filepath string
----@param source string
+---@param source "collect" | "setup"
 ---@return any
 function LuatestTestRunner:importFile(filepath, source)
-    return require(filepath)
+    return self.moduleRunner:import(filepath)
 end
 
 ---@param file File
