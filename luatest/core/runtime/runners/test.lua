@@ -45,7 +45,7 @@ end
 
 ---@param listener fun()
 function LuatestTestRunner:onCleanupWorkerContext(listener)
-    self.workerState:onCleanup(listener)
+    self.workerState.onCleanup(listener)
 end
 
 function LuatestTestRunner:onAfterRunFiles()

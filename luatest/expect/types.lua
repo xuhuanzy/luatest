@@ -85,7 +85,7 @@
 ---@field isExpectingAssertionsError? Error 期待断言错误信息
 ---@field isNot boolean 是否取反
 ---@field suppressedErrors Error[] 被抑制的错误数组
----@field testPath? string|(fun(): string) 测试文件路径
+---@field testPath? string|(fun(): string?) 测试文件路径
 ---@field soft? boolean 是否为软断言模式
 ---@field task? table 当前测试任务(只读)
 

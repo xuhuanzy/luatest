@@ -30,5 +30,14 @@ function export.errorLevel(level)
     return level
 end
 
+-- 抛出错误
+---@param e Error|string 当传入`string`时, 会自动转换为`Error`对象
+function export.throw(e)
+    if type(e) == "string" then
+        ---@type Error
+        e = { message = e }
+    end
+    error(e, 2)
+end
 
 return export

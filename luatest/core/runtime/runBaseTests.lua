@@ -6,6 +6,7 @@ local collectTests = require("luatest.runner.collect").collectTests
 local tu = require("luatest.core.integrations.luatest-utils").tu
 ---@namespace Luatest
 
+---@export namespace
 ---@param method "run" | "collect"
 ---@param files string[]
 ---@param config SerializedConfig

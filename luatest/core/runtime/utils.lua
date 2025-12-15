@@ -16,6 +16,15 @@ function export.getWorkerState()
     return workerState
 end
 
+-- 设置工作状态
+---@param context table
+---@param state WorkerGlobalState
+---@return WorkerGlobalState
+function export.provideWorkerState(context, state)
+    context[NAME_WORKER_STATE] = state
+    return state
+end
+
 local luatestPrefixes = {
     "luatest",
     "luatest.",
