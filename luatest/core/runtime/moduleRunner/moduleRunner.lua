@@ -104,12 +104,16 @@ local function createIsolatedEnv(moduleRunner)
     -- 注入隔离的 package 表
     fileEnv.package = setmetatable({
         loaded = isolatedLoaded,
+        path = package.path,
+        cpath = package.cpath,
     }, { __index = package })
 
-    -- 注入隔离的 require 函数（使用同一个 package.loaded 代理）
+    -- 注入隔离的 require 函数
     fileEnv.require = createIsolatedRequire(isolatedLoaded)
+    -- 让 _G 指向 fileEnv 自身
+    fileEnv._G = fileEnv
 
-    -- 其他全局变量从 _G 继承
+    -- 其他全局变量从真实 _G 继承
     setmetatable(fileEnv, { __index = _G })
     return fileEnv
 end
