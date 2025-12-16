@@ -5,6 +5,7 @@
 ---@class SuiteAPI
 
 ---@class TestAPI<ExtraContext: table>
+---@overload fun(name: string, fn: function)
 
 ---@alias SuiteFactory fun(test: TestAPI) 工厂函数
 

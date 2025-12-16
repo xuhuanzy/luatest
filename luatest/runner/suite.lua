@@ -14,6 +14,7 @@ local createChainable = require("luatest.runner.utils.chain")
 local createTaskName = require("luatest.runner.utils.tasks").createTaskName
 local runWithSuite = require("luatest.runner.context").runWithSuite
 local getCurrentTest = require("luatest.runner.test-state").getCurrentTest
+local withFixtures = require("luatest.runner.fixture").withFixtures
 
 
 ---@namespace Luatest
@@ -262,8 +263,7 @@ local function createSuiteCollector(name, factory, mode, suiteOptions)
 
         -- 设置处理函数
         if handler then
-            -- TODO: 使用 fixture
-            setFn(task, handler)
+            setFn(task, withFixtures(runner, handler, context))
         end
 
         -- 位置信息

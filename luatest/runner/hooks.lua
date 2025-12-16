@@ -1,13 +1,13 @@
+local withFixtures = require("luatest.runner.fixture").withFixtures
+local getCurrentTest = require("luatest.runner.test-state").getCurrentTest
 ---@namespace Luatest
 
 ---@export namespace
 local export = {}
 
 -- 解决循环引用问题
----@[lsp_optimization("delayed_definition")]
 local _getCurrentSuite
----@[lsp_optimization("delayed_definition")]
-local _getCurrentTest
+local _getRunner
 
 ---@return SuiteCollector
 local function getCurrentSuite()
@@ -17,12 +17,12 @@ local function getCurrentSuite()
     return _getCurrentSuite()
 end
 
----@return Test?
-local function getCurrentTest()
-    if not _getCurrentTest then
-        _getCurrentTest = require("luatest.runner.test-state").getCurrentTest
+---@return Runner
+local function getRunner()
+    if not _getRunner then
+        _getRunner = require("luatest.runner.suite").getRunner
     end
-    return _getCurrentTest()
+    return _getRunner()
 end
 
 
@@ -51,7 +51,8 @@ end
 ---@param fn BeforeEachListener 回调函数
 export.beforeEach = function(fn)
     assert(type(fn) == 'function', '"beforeEach" callback must be a function')
-    getCurrentSuite().on('beforeEach', fn)
+    local runner = getRunner()
+    getCurrentSuite().on('beforeEach', withFixtures(runner, fn))
 end
 
 -- 注册一个回调函数, 在当前上下文中的每个测试运行后调用.
@@ -60,7 +61,8 @@ end
 ---@param fn AfterEachListener 回调函数
 export.afterEach = function(fn)
     assert(type(fn) == 'function', '"afterEach" callback must be a function')
-    getCurrentSuite().on('afterEach', fn)
+    local runner = getRunner()
+    getCurrentSuite().on('afterEach', withFixtures(runner, fn))
 end
 
 

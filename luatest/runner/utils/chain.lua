@@ -2,12 +2,19 @@
 
 local meta = {}
 
+---@class Chainable
+---@field context table 当前上下文
+---@field package keySet table 可链式的键集合
+---@field fn function|table 可被执行的对象/函数
+
+
 -- 创建链式对象
 ---@param context table 当前上下文
 ---@param keySet table 可链式的键集合
 ---@param fn any 可被执行的对象/函数
 ---@return table @ 链式对象
 local function create(context, keySet, fn)
+    ---@type Chainable
     local chain = {
         context = context,
         keySet = keySet,
