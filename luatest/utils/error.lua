@@ -11,6 +11,7 @@ function export.processError(_err, diffOptions, seen)
     if not seen then
         seen = setmetatable({}, { __mode = "k" })
     end
+    return _err
 end
 
 -- 查询调用栈中第一个不在调用者所在文件中的函数调用层级以报告错误

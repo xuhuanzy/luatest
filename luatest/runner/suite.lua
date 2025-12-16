@@ -262,6 +262,7 @@ local function createSuiteCollector(name, factory, mode, suiteOptions)
 
         -- 设置处理函数
         if handler then
+            -- TODO: 使用 fixture
             setFn(task, handler)
         end
 

@@ -30,7 +30,7 @@ local function mergeHooks(baseHooks, hooks)
     return baseHooks
 end
 
----收集测试文件
+-- 收集测试文件
 ---@param specs string[] 文件路径列表
 ---@param runner Runner
 ---@return File[]

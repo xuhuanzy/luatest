@@ -25,18 +25,15 @@ function export.provideWorkerState(context, state)
     return state
 end
 
-local luatestPrefixes = {
-    "luatest",
-    "luatest.",
-}
 -- 判断模块名是否属于 luatest 内部模块
 ---@param moduleName string
 ---@return boolean
 function export.isLuatestInternalModule(moduleName)
-    for _, prefix in ipairs(luatestPrefixes) do
-        if moduleName == prefix or moduleName:sub(1, #prefix) == prefix then
-            return true
-        end
+    if moduleName == "luatest" then
+        return true
+    end
+    if moduleName:sub(1, #"luatest.") == "luatest." then
+        return true
     end
     return false
 end

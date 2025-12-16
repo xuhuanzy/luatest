@@ -14,7 +14,7 @@ function export.runBaseTests(method, state)
     provideWorkerState(_G, state)
 
     local moduleRunner = startModuleRunner({
-        evaluatedModules = state.evaluatedModules
+        evaluatedModules = state.evaluatedModules,
     })
     if not moduleRunner then
         error("moduleRunner is not provided")

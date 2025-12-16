@@ -5,6 +5,7 @@ local worker = require("luatest.core.runtime.worker")
 local isRunning = false
 
 -- 提供单文件直接执行测试的功能
+---@export global
 return setmetatable({}, {
     __call = function(self)
         -- 检查是否在 CLI 模式
@@ -21,8 +22,6 @@ return setmetatable({}, {
             error("require('luatest.runner')() 只能在直接运行测试文件时调用", 2)
         end
         local currentFile = arg[0]
-
-        print("🚀 运行测试文件: " .. currentFile .. "\n")
 
         worker.run({
             config = {

@@ -18,6 +18,7 @@ local function run(method, files, config, moduleRunner)
         -- 清理环境
         if config.isolate then
             resetModules(workerState.evaluatedModules)
+            moduleRunner:resetFileEnv()
         end
         workerState.filepath = file
         if method == "run" then

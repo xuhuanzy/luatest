@@ -4,13 +4,9 @@ local isLuatestInternalModule = require("luatest.core.runtime.utils").isLuatestI
 ---@class ModuleEvaluatorOptions
 ---@field evaluatedModules EvaluatedModules
 
-
 ---@class ModuleEvaluator
----@field runModule fun(self: self, path: string): any 运行模块
-
-
----@class LuatestModuleEvaluator: ModuleEvaluator
----@field _evaluatedModules EvaluatedModules
+---@field evaluatedModules EvaluatedModules
+---@field fileEnv? IsolatedEnv
 local ModuleEvaluator = {}
 ---@package
 ModuleEvaluator.__index = ModuleEvaluator
@@ -18,43 +14,111 @@ ModuleEvaluator.__index = ModuleEvaluator
 ---@param options ModuleEvaluatorOptions
 ---@return ModuleEvaluator
 function ModuleEvaluator.new(options)
-    ---@type LuatestModuleEvaluator
+    ---@type ModuleEvaluator
     local self = setmetatable({}, ModuleEvaluator)
-    self._evaluatedModules = options.evaluatedModules
+    self.evaluatedModules = options.evaluatedModules or {}
     return self
 end
 
---- 创建隔离的 require 函数
----@param isolatedPackageLoaded table 隔离的 package.loaded 代理表
+local sharedBuiltinModules = {
+    -- Lua 标准库/运行时模块
+    ["package"] = true,
+    ["coroutine"] = true,
+    ["string"] = true,
+    ["table"] = true,
+    ["math"] = true,
+    ["io"] = true,
+    ["os"] = true,
+    ["debug"] = true,
+    ["utf8"] = true,
+    ["bit32"] = true,
+    ["jit"] = true,
+    ["ffi"] = true,
+}
+
+---@param moduleName string
+---@return boolean
+local function isSharedModule(moduleName)
+    return isLuatestInternalModule(moduleName) or sharedBuiltinModules[moduleName] == true
+end
+
+-- 创建隔离的 require 函数
+---@param evaluatedModules EvaluatedModules 用户模块缓存
+---@param fileEnv IsolatedEnv 文件环境
 ---@return function
-local function createIsolatedRequire(isolatedPackageLoaded)
+local function createIsolatedRequire(evaluatedModules, fileEnv)
     local originalRequire = require
+    local LOADING = {}
 
     ---@param moduleName string
     ---@return any
     return function(moduleName)
-        -- 先检查隔离的 package.loaded
-        local cached = isolatedPackageLoaded[moduleName]
+        local cached = evaluatedModules[moduleName]
         if cached ~= nil then
+            if cached == LOADING then
+                return true
+            end
             return cached
         end
-
-        -- 加载模块
-        local result = originalRequire(moduleName)
-
-        -- luatest 内部模块不做额外处理
-        if not isLuatestInternalModule(moduleName) then
-            -- 将模块存入隔离表
-            isolatedPackageLoaded[moduleName] = result
-            -- 从全局 package.loaded 移除, 保持隔离
-            package.loaded[moduleName] = nil
+        -- 共享模块使用原始 require
+        if isSharedModule(moduleName) then
+            return originalRequire(moduleName)
         end
 
-        return result
+        -- 标记为正在加载
+        evaluatedModules[moduleName] = LOADING
+
+        local ok, resultOrErr = pcall(function()
+            -- preload
+            local preload = fileEnv.package.preload
+            if preload then
+                local loader = preload[moduleName]
+                if loader ~= nil then
+                    return loader(moduleName)
+                end
+            end
+
+            -- Lua 文件
+            local path = fileEnv.package.searchpath(moduleName, fileEnv.package.path)
+            if path then
+                local chunk, err = fileEnv.loadfile(path, "bt")
+                if not chunk then
+                    error(string.format("error loading module '%s' from file '%s':\n\t%s", moduleName, path, err))
+                end
+                return chunk(moduleName)
+            end
+
+            -- C 模块
+            local cpath = fileEnv.package.searchpath(moduleName, fileEnv.package.cpath)
+            if cpath then
+                local openName = "luaopen_" .. moduleName:gsub("[^%w]", "_")
+                local loader, err = fileEnv.package.loadlib(cpath, openName)
+                if not loader then
+                    error(string.format("error loading module '%s' from file '%s':\n\t%s", moduleName, cpath, err))
+                end
+                ---@diagnostic disable-next-line: redundant-parameter
+                return loader(moduleName)
+            end
+
+            error(string.format("module '%s' not found", moduleName))
+        end)
+
+        if not ok then
+            evaluatedModules[moduleName] = nil
+            error(resultOrErr, 2)
+        end
+
+        if resultOrErr ~= nil then
+            evaluatedModules[moduleName] = resultOrErr
+        elseif evaluatedModules[moduleName] == LOADING then
+            evaluatedModules[moduleName] = true
+        end
+
+        return evaluatedModules[moduleName]
     end
 end
 
---- 创建隔离的 package.loaded 代理表
+-- 创建隔离的 package.loaded 代理表
 ---@param evaluatedModules EvaluatedModules
 ---@return table
 local function createIsolatedPackageLoaded(evaluatedModules)
@@ -63,26 +127,24 @@ local function createIsolatedPackageLoaded(evaluatedModules)
     local proxy = {}
     setmetatable(proxy, {
         __index = function(_, key)
-            -- 优先从隔离缓存获取
-            if evaluatedModules[key] ~= nil then
-                return evaluatedModules[key]
+            if isSharedModule(key) then
+                return originalLoaded[key]
             end
-            return originalLoaded[key]
+            return evaluatedModules[key]
         end,
         __newindex = function(_, key, value)
-            -- luatest 内部模块写入原始 package.loaded
-            if isLuatestInternalModule(key) then
+            if isSharedModule(key) then
                 originalLoaded[key] = value
             else
-                -- 用户模块写入隔离缓存
                 evaluatedModules[key] = value
             end
         end,
         __pairs = function(_)
-            -- 合并两个表的迭代
             local merged = {}
             for k, v in pairs(originalLoaded) do
-                merged[k] = v
+                if isSharedModule(k) then
+                    merged[k] = v
+                end
             end
             for k, v in pairs(evaluatedModules) do
                 merged[k] = v
@@ -95,38 +157,91 @@ end
 
 -- 创建隔离的环境
 ---@param evaluatedModules EvaluatedModules
----@return table
+---@return IsolatedEnv
 local function createIsolatedEnv(evaluatedModules)
-    -- TODO: 我们需要更严格环境隔离
-
-    -- 为每个文件创建独立的环境
-    local fileEnv = {}
-
-    -- 先创建隔离的 package.loaded 代理
     local isolatedLoaded = createIsolatedPackageLoaded(evaluatedModules)
 
-    -- 注入隔离的 package 表
+    ---@class IsolatedEnv
+    local fileEnv = {}
+
+    fileEnv._VERSION = _VERSION
+    fileEnv.assert = assert
+    fileEnv.error = error
+    fileEnv.ipairs = ipairs
+    fileEnv.pairs = pairs
+    fileEnv.next = next
+    fileEnv.pcall = pcall
+    fileEnv.xpcall = xpcall
+    fileEnv.select = select
+    fileEnv.tonumber = tonumber
+    fileEnv.tostring = tostring
+    fileEnv.type = type
+    fileEnv.print = print
+    fileEnv.rawequal = rawequal
+    fileEnv.rawget = rawget
+    fileEnv.rawset = rawset
+    fileEnv.getmetatable = getmetatable
+    fileEnv.setmetatable = setmetatable
+    fileEnv.collectgarbage = collectgarbage
+    fileEnv.coroutine = coroutine
+    fileEnv.string = string
+    fileEnv.table = table
+    fileEnv.math = math
+    fileEnv.io = io
+    fileEnv.os = os
+    fileEnv.debug = debug
+    fileEnv.utf8 = utf8
+    fileEnv.arg = rawget(_G, "arg")
+    fileEnv.bit32 = rawget(_G, "bit32")
+    fileEnv.jit = rawget(_G, "jit")
+
+    fileEnv._G = fileEnv
+
+    fileEnv.load = function(ld, chunkname, mode, env)
+        if env == nil then env = fileEnv end
+        return load(ld, chunkname, mode, env)
+    end
+    fileEnv.loadfile = function(filename, mode, env)
+        if env == nil then env = fileEnv end
+        return loadfile(filename, mode, env)
+    end
+    fileEnv.dofile = function(filename)
+        local chunk, err = fileEnv.loadfile(filename)
+        if not chunk then
+            error(err, 2)
+        end
+        return chunk()
+    end
+
     fileEnv.package = setmetatable({
         loaded = isolatedLoaded,
+        preload = package.preload,
         path = package.path,
         cpath = package.cpath,
     }, { __index = package })
 
-    -- 注入隔离的 require 函数
-    fileEnv.require = createIsolatedRequire(isolatedLoaded)
-    -- 让 _G 指向 fileEnv 自身
-    fileEnv._G = fileEnv
-
-    -- 其他全局变量从真实 _G 继承
-    setmetatable(fileEnv, { __index = _G })
+    fileEnv.require = createIsolatedRequire(evaluatedModules, fileEnv)
     return fileEnv
+end
+
+---@return IsolatedEnv
+function ModuleEvaluator:getFileEnv()
+    if not self.fileEnv then
+        self.fileEnv = createIsolatedEnv(self.evaluatedModules)
+    end
+    return self.fileEnv
+end
+
+function ModuleEvaluator:resetFileEnv()
+    self.fileEnv = nil
 end
 
 -- 运行模块
 ---@param path string
 ---@return any
 function ModuleEvaluator:runModule(path)
-    local fileEnv = createIsolatedEnv(self._evaluatedModules)
+    local fileEnv = self:getFileEnv()
+
     local file, err = io.open(path, "rb")
     if not file then
         error(err)
@@ -139,7 +254,6 @@ function ModuleEvaluator:runModule(path)
         error(err)
     end
 
-    -- 直接执行
     return chunk()
 end
 

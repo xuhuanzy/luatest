@@ -10,7 +10,7 @@ local LuatestModuleEvaluator = require("luatest.core.runtime.moduleRunner.module
 ---@return ModuleRunner
 local function startModuleRunner(options)
     local evaluator = LuatestModuleEvaluator.new({
-        evaluatedModules = options.evaluatedModules
+        evaluatedModules = options.evaluatedModules,
     })
 
     local runner = ModuleRunner.new({

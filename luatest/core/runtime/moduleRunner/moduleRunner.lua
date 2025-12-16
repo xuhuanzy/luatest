@@ -29,4 +29,11 @@ function ModuleRunner:import(path)
     return self.evaluator:runModule(path)
 end
 
+function ModuleRunner:resetFileEnv()
+    local evaluator = self.evaluator
+    if evaluator and evaluator.resetFileEnv then
+        evaluator:resetFileEnv()
+    end
+end
+
 return ModuleRunner
