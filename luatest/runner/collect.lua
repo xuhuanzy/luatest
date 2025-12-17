@@ -32,8 +32,8 @@ end
 
 -- 收集测试文件
 ---@param specs string[] 文件路径列表
----@param runner Runner
----@return File[]
+---@param runner Runner 运行器
+---@return File[] files 文件列表
 function export.collectTests(specs, runner)
     local files = {} ---@type File[]
     local config = runner.config
