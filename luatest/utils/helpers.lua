@@ -2,6 +2,7 @@ local type = type
 local debugGetmetatable = debug.getmetatable
 local debugSetmetatable = debug.setmetatable
 local next = next
+local now = os.clock
 
 ---@namespace Luatest
 
@@ -138,5 +139,19 @@ local function deepCompare(t1, t2, ignoreMeta, pairCache)
     return true
 end
 export.deepCompare = deepCompare
+
+
+-- 获取 Unix 时间戳(毫秒), 但精度只有秒级.
+---@return integer
+function export.unixNow()
+    return os.time() * 1000
+end
+
+-- 获取 lua 使用的 cpu 时间(毫秒)
+---@return integer
+function export.nowMs()
+    -- now 具有小数点后 3 位精度, 即实际毫秒级时间
+    return now() --[[@as integer]] * 1000
+end
 
 return export

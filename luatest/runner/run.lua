@@ -7,19 +7,15 @@ local processError = require("luatest.utils.error").processError
 local hasTests = require("luatest.runner.utils.tasks").hasTests
 local hasFailed = require("luatest.runner.utils.tasks").hasFailed
 local collectTests = require("luatest.runner.collect").collectTests
+local nowMs = require("luatest.utils.helpers").nowMs
+local unixNow = require("luatest.utils.helpers").unixNow
+local now = os.clock
 
 ---@namespace Luatest
 
 ---@export namespace
 local export = {}
 
--- 返回 lua 使用的 cpu 时间(秒), 但精度约为 1 微秒
-local now = os.clock
-
--- 获取 Unix 时间戳(毫秒)
-local function unixNow()
-    return os.time() * 1000
-end
 
 ---反转表
 ---@generic T
@@ -33,14 +29,67 @@ local function reverseTable(t)
     return reversed
 end
 
+---@type table<string, [TaskResult?, TaskMeta?]>
+local packs = {}
+---@type TaskEventPack[]
+local eventsPacks = {}
+
+---@param runner Runner
+local function sendTasksUpdate(runner)
+    if next(packs) == nil then
+        return
+    end
+
+    ---@type TaskResultPack[]
+    local taskPacks = {}
+    for id, tuple in pairs(packs) do
+        taskPacks[#taskPacks + 1] = { id, tuple[1], tuple[2] }
+    end
+
+    -- 发送任务更新
+    if runner.onTaskUpdate then
+        runner:onTaskUpdate(taskPacks, eventsPacks)
+    end
+
+    -- 清空事件和任务
+    for i = #eventsPacks, 1, -1 do
+        eventsPacks[i] = nil
+    end
+    for k in pairs(packs) do
+        packs[k] = nil
+    end
+end
+
+---@param fn fun(runner: Runner)
+---@param ms number
+---@return fun(runner: Runner)
+local function throttle(fn, ms)
+    local last = 0
+    local now = nowMs()
+    return function(runner)
+        now = nowMs()
+        if now - last > ms then
+            last = now
+            return fn(runner)
+        end
+    end
+end
+
+local sendTasksUpdateThrottled = throttle(sendTasksUpdate, 100)
+
+---@param runner Runner
+function export.finishSendTasksUpdate(runner)
+    sendTasksUpdate(runner)
+end
+
 -- 更新任务状态并通知 Runner
 ---@param event TaskUpdateEvent
 ---@param task Task
 ---@param runner Runner
 local function updateTask(event, task, runner)
-    if runner.onTaskUpdate then
-        runner:onTaskUpdate(task, event)
-    end
+    eventsPacks[#eventsPacks + 1] = { task.id, event, nil }
+    packs[task.id] = { task.result, task.meta }
+    sendTasksUpdateThrottled(runner)
 end
 export.updateTask = updateTask
 
@@ -202,6 +251,12 @@ function export.runTest(test, runner)
     if test.mode ~= "run" and test.mode ~= "queued" then
         updateTask("test-prepare", test, runner)
         updateTask("test-finished", test, runner)
+        return
+    end
+
+    -- TODO: 理论上这一步不会被触发
+    if test.result and test.result.state == "fail" then
+        updateTask("test-failed-early", test, runner)
         return
     end
 
@@ -493,38 +548,49 @@ function export.runFiles(files, runner)
     end
 end
 
--- 开始测试. 他会先收集测试文件, 然后再执行测试
+-- 开始测试.
+--
+-- 先收集测试文件, 然后再执行测试.
 ---@param specs string[] 文件路径列表
 ---@param runner Runner
 ---@return File[] files 测试文件结果
 function export.startTests(specs, runner)
-    -- 收集前回调
-    if runner.onBeforeCollect then
-        runner:onBeforeCollect(specs)
+    local ok, result = pcall(function()
+        -- 收集前回调
+        if runner.onBeforeCollect then
+            runner:onBeforeCollect(specs)
+        end
+
+        -- 收集测试
+        local files = collectTests(specs, runner)
+
+        -- 收集后回调
+        if runner.onCollected then
+            runner:onCollected(files)
+        end
+
+        -- 运行文件前回调
+        if runner.onBeforeRunFiles then
+            runner:onBeforeRunFiles(files)
+        end
+
+        -- 执行测试
+        export.runFiles(files, runner)
+
+        -- 运行文件后回调
+        if runner.onAfterRunFiles then
+            runner:onAfterRunFiles(files)
+        end
+
+        export.finishSendTasksUpdate(runner)
+        return files
+    end)
+    if not ok then
+        error(result)
     end
+    ---@cast result -string
 
-    -- 收集测试
-    local files = collectTests(specs, runner)
-
-    -- 收集后回调
-    if runner.onCollected then
-        runner:onCollected(files)
-    end
-
-    -- 运行文件前回调
-    if runner.onBeforeRunFiles then
-        runner:onBeforeRunFiles(files)
-    end
-
-    -- 执行测试
-    export.runFiles(files, runner)
-
-    -- 运行文件后回调
-    if runner.onAfterRunFiles then
-        runner:onAfterRunFiles(files)
-    end
-
-    return files
+    return result
 end
 
 return export

@@ -50,7 +50,7 @@
 ---@field result TaskResult? 执行结果
 ---@field retry number? 失败重试次数, 默认 0
 ---@field repeats number? 成功后重复次数, 默认 0
----@field meta table<string, any>? 自定义元数据
+---@field meta? TaskMeta 自定义元数据
 ---@field location { line: number, column: number, file: string }? 任务位置信息
 ---@field shuffle boolean? 是否随机运行
 ---@field sequential boolean? 是否顺序运行
@@ -143,7 +143,7 @@
 ---@field onBeforeRunTask fun(self:self, test: Test)? 运行 Test 前的回调
 ---@field onAfterRunTask fun(self:self, test: Test)? 在结果和状态都被设置之后被调用
 ---@field onTaskFinished fun(self:self, test: Test)? 测试函数执行完成后的回调 (在 afterEach 之前)
----@field onTaskUpdate fun(self:self, task: Task, event: TaskUpdateEvent)? 任务更新回调(报告结果)
+---@field onTaskUpdate fun(self:self, update: TaskResultPack[], events: TaskEventPack[])? 任务更新回调(报告结果)
 ---@field extendTaskContext? fun(self:self, context: TestContext): TestContext? 当为测试定义新上下文时调用, 用于向测试上下文添加自定义属性
 ---@field runSuite? fun(self:self, suite: Suite) 如果定义了此函数, 那么将替代常规的 Suite 分区与处理流程进行调用. "before"与"after"钩子函数将不会被忽略.
 ---@field onBeforeTryTask? fun(self:self, test: Test, options: { retry: integer, repeats: integer })? 在实际运行测试函数之前被调用
@@ -162,6 +162,10 @@
 ---| "suite-prepare" Suite 准备开始
 ---| "suite-finished" Suite 完成
 ---| "suite-failed-early" 收集期间失败
+---| "before-hook-start"
+---| "before-hook-end"
+---| "after-hook-start"
+---| "after-hook-end"
 
 ---@alias BeforeAllListener fun(suite: Suite|File) 在所有测试前运行的钩子
 
@@ -177,3 +181,23 @@
 ---@field afterAll AfterAllListener[] 所有测试后的钩子数组
 ---@field beforeEach BeforeEachListener[] 每个测试前的钩子数组
 ---@field afterEach AfterEachListener[] 每个测试后的钩子数组
+
+---@alias TaskMeta table
+
+
+-- 表示单个任务更新的元组. 通常在任务完成后报告.
+---@class TaskResultPack
+---@[index_alias("id")]
+---@field [1] string 任务 ID, `task.id`
+---@[index_alias("result")]
+---@field [2]? TaskResult 测试结果
+---@[index_alias("meta")]
+---@field [3]? TaskMeta 任务元数据
+
+---@class TaskEventPack
+---@[index_alias("id")]
+---@field [1] string 任务 ID, `task.id`
+---@[index_alias("event")]
+---@field [2] TaskUpdateEvent 任务更新事件
+---@[index_alias("data")]
+---@field [3]? any 任务更新数据
