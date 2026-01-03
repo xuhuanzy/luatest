@@ -1,6 +1,5 @@
 local getHooks = require("luatest.runner.map").getHooks
 local getFn = require("luatest.runner.map").getFn
-local getFileContext = require("luatest.runner.context").getFileContext
 local setCurrentTest = require("luatest.runner.test-state").setCurrentTest
 local addRunningTest = require("luatest.runner.test-state").addRunningTest
 local processError = require("luatest.utils.error").processError

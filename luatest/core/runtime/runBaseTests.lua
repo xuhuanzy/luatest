@@ -4,6 +4,7 @@ local resetModules = require("luatest.core.runtime.utils").resetModules
 local startTests = require("luatest.runner.run").startTests
 local collectTests = require("luatest.runner.collect").collectTests
 local tu = require("luatest.core.integrations.luatest-utils").tu
+local nowMs = require("luatest.utils.helpers").nowMs
 ---@namespace Luatest
 
 ---@export namespace
@@ -17,8 +18,10 @@ local function run(method, files, config, moduleRunner)
     for _, file in ipairs(files) do
         -- 清理环境
         if config.isolate then
+            local t0 = nowMs()
             resetModules(workerState.evaluatedModules)
             moduleRunner:resetFileEnv()
+            workerState.durations.environment = workerState.durations.environment + (nowMs() - t0)
         end
         workerState.filepath = file
         if method == "run" then

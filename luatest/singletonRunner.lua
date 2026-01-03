@@ -1,6 +1,8 @@
 ---@namespace Luatest
 
 local worker = require("luatest.core.runtime.worker")
+local createMethodsRPC = require("luatest.core.controller.rpc")
+local TestRun = require("luatest.core.controller.test-run")
 
 local isRunning = false
 
@@ -23,6 +25,12 @@ return setmetatable({}, {
         end
         local currentFile = arg[0]
 
+        local testRun = TestRun.new({
+            reporters = {
+            },
+        })
+        local rpc = createMethodsRPC(testRun)
+
         worker.run({
             config = {
                 isolate = true,
@@ -35,6 +43,10 @@ return setmetatable({}, {
                 }
             },
             files = { currentFile },
+            controller = {
+                testRun = testRun,
+            },
+            rpc = rpc,
         })
 
 

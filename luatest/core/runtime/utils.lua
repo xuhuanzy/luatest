@@ -46,4 +46,12 @@ function export.resetModules(modules)
     end
 end
 
+--- 获取与主线通信的接口
+---@return RuntimeRPC
+function export.rpc()
+    local state = export.getWorkerState()
+    ---@cast state.rpc -?
+    return state.rpc
+end
+
 return export
