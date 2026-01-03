@@ -1,6 +1,4 @@
 local throw = require("luatest.utils.error").throw
-local defaultWorker = require("luatest.core.runtime.workers")
-local nowMs = require("luatest.utils.helpers").nowMs
 ---@namespace Luatest
 
 ---@export namespace
@@ -35,6 +33,7 @@ local function execute(method, ctx, worker)
     if (not workerRun) or (type(workerRun) ~= "function") then
         throw("Test worker should expose \"" .. methodName .. "\" method. Received \"" .. type(workerRun) .. "\".")
     end
+    workerRun(state)
 end
 
 ---@param ctx WorkerContext

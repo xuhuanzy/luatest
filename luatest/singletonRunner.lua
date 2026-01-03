@@ -1,8 +1,6 @@
 ---@namespace Luatest
 
-local worker = require("luatest.core.runtime.worker")
-local createMethodsRPC = require("luatest.core.controller.rpc")
-local TestRun = require("luatest.core.controller.test-run")
+local Luatest = require("luatest.core.controller.core")
 
 local isRunning = false
 
@@ -18,69 +16,34 @@ return setmetatable({}, {
         end
         isRunning = true
 
-
         -- 检查是否为单文件直接运行
         if not arg or not arg[0] then
             error("require('luatest.runner')() 只能在直接运行测试文件时调用", 2)
         end
+
         local currentFile = arg[0]
 
-        local testRun = TestRun.new({
-            reporters = {
-            },
-        })
-        local rpc = createMethodsRPC(testRun)
+        -- 校验是否为 .lua 文件
+        if not currentFile:match("%.lua$") then
+            error("arg[0] 必须是一个 .lua 文件: " .. currentFile, 2)
+        end
 
-        worker.run({
-            config = {
-                isolate = true,
-                clearMocks = false,
-                mockReset = false,
-                restoreMocks = false,
-                unstubGlobals = false,
-                sequence = {
-                    shuffle = false,
-                }
-            },
+        -- 校验文件是否存在
+        local file = io.open(currentFile, "r")
+        if not file then
+            error("无法打开文件，请检查路径是否正确: " .. currentFile, 2)
+        end
+        file:close()
+
+        -- 初始化
+        local luatest = Luatest.new()
+        luatest:start({
             files = { currentFile },
-            controller = {
-                testRun = testRun,
-            },
-            rpc = rpc,
         })
-
-
-
-        -- -- 加载 SimpleRunner
-        -- local SimpleRunner = require("luatest.runner.SimpleRunner")
-
-        -- -- 合并配置
-        -- local defaultConfig = {
-        --     root = ".",
-        --     testTimeout = 5000,
-        --     hookTimeout = 10000,
-        --     retry = 0,
-        -- }
-
-        -- local finalConfig = config or {}
-        -- for k, v in pairs(defaultConfig) do
-        --     if finalConfig[k] == nil then
-        --         finalConfig[k] = v
-        --     end
-        -- end
-
-        -- local runnerInstance = SimpleRunner.new(finalConfig)
-        -- local currentFile = arg[0]
-
-
-        -- -- 收集并运行测试
-        -- local files = collect.collectTests({ currentFile }, runnerInstance)
-        -- run.runFiles(files, runnerInstance)
 
         -- 清除标记
         isRunning = false
 
-        -- 退出程序
         os.exit(0)
     end
 })

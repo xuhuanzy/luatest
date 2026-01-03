@@ -32,7 +32,7 @@ end
 
 ---@param file File
 function TestRun:enqueued(file)
-
+    self.luatest.state:collectFiles({ file })
 end
 
 ---@param files File[]
