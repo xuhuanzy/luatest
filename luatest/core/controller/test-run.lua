@@ -19,7 +19,7 @@ end
 ---@param update TaskResultPack[]
 ---@param events TaskEventPack[]
 function TestRun:updated(update, events)
-
+    self.luatest.state:updateTasks(update)
 end
 
 function TestRun:start()
@@ -37,7 +37,7 @@ end
 
 ---@param files File[]
 function TestRun:collected(files)
-
+    self.luatest.state:collectFiles(files)
 end
 
 return TestRun
