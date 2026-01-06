@@ -2,6 +2,7 @@
 
 local createFileTask = require("luatest.runner.utils.collect").createFileTask
 local reportedTasks = require("luatest.core.controller.reporters.reported-tasks")
+local nowMs = require("luatest.utils.helpers").nowMs
 
 ---@class StateManagerOptions
 ---@field root? string
@@ -17,6 +18,11 @@ local reportedTasks = require("luatest.core.controller.reporters.reported-tasks"
 ---@field taskFileMap table<Task, File> # Task -> File (weak keys)
 ---@field errorsSet table<any, boolean> # error -> true
 ---@field reportedTasksMap table<Task, TestModule|TestSuite|TestCase> # Task -> reported entity (weak keys)
+---@field taskEvents TaskEventPack[] # 本次 run 的事件流(按接收顺序)
+---@field taskEventsById table<string, TaskEventPack[]> # taskId -> events (按接收顺序)
+---@field runStartMs number # 本次 run 开始时间(用于 duration; nowMs)
+---@field runEndMs number # 本次 run 结束时间(用于 duration; nowMs)
+---@field runStartAt string? # 本次 run 的开始时间字符串(HH:MM:SS)
 ---@field blobs? any
 ---@field transformTime number
 ---@field onUnhandledError? fun(error: any): boolean|nil # 返回 false 表示忽略
@@ -78,6 +84,11 @@ function StateManager.new(options)
         taskFileMap = setmetatable({}, { __mode = "k" }),
         errorsSet = {},
         reportedTasksMap = setmetatable({}, { __mode = "k" }),
+        taskEvents = {},
+        taskEventsById = {},
+        runStartMs = 0,
+        runEndMs = 0,
+        runStartAt = nil,
         blobs = nil,
         transformTime = 0,
         metadata = {},
@@ -87,6 +98,54 @@ function StateManager.new(options)
         },
     }
     return setmetatable(self, StateManager)
+end
+
+--- 重置本次 run 的事件与时间信息
+function StateManager:resetRunState()
+    self.taskEvents = {}
+    self.taskEventsById = {}
+    self.runStartMs = 0
+    self.runEndMs = 0
+    self.runStartAt = nil
+end
+
+--- 标记 run 开始
+function StateManager:startRun()
+    self:resetRunState()
+    self.runStartMs = nowMs()
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    self.runStartAt = os.date("%H:%M:%S")
+end
+
+--- 标记 run 结束
+function StateManager:finishRun()
+    self.runEndMs = nowMs()
+end
+
+---@return number
+function StateManager:getRunDurationMs()
+    local endMs = self.runEndMs
+    if endMs == 0 then
+        endMs = nowMs()
+    end
+    return math.max(0, endMs - (self.runStartMs or 0))
+end
+
+--- 记录 runner 上报的事件(按接收顺序追加)
+---@param events TaskEventPack[]?
+function StateManager:recordTaskEvents(events)
+    for _, pack in ipairs(events or {}) do
+        self.taskEvents[#self.taskEvents + 1] = pack
+        local taskId = pack[1]
+        if type(taskId) == "string" and taskId ~= "" then
+            local list = self.taskEventsById[taskId]
+            if not list then
+                list = {}
+                self.taskEventsById[taskId] = list
+            end
+            list[#list + 1] = pack
+        end
+    end
 end
 
 ---@param error any
@@ -169,6 +228,7 @@ function StateManager:getFiles(keys)
     return out
 end
 
+---@param keys? string[]
 ---@return any[]
 function StateManager:getTestModules(keys)
     local out = {}
@@ -267,27 +327,13 @@ end
 function StateManager:updateId(task)
     local existing = self.idMap[task.id]
 
-    if existing == task then
-        if not self.reportedTasksMap[task] then
-            if task.type == "suite" and task.filepath ~= nil then
-                reportedTasks.TestModule:register(task, self)
-            elseif task.type == "suite" then
-                reportedTasks.TestSuite:register(task, self)
-            else
-                reportedTasks.TestCase:register(task, self)
-            end
-        end
-
-        if task.type == "suite" and task.tasks then
-            for _, child in ipairs(task.tasks) do
-                self:updateId(child)
-            end
-        end
-        return
+    local file = task.file
+    if file then
+        self.taskFileMap[task] = file
     end
 
     if not self.reportedTasksMap[task] then
-        if task.type == "suite" and task.filepath ~= nil then
+        if task.type == "suite" and task["filepath"] ~= nil then
             reportedTasks.TestModule:register(task, self)
         elseif task.type == "suite" then
             reportedTasks.TestSuite:register(task, self)
@@ -296,11 +342,8 @@ function StateManager:updateId(task)
         end
     end
 
-    self.idMap[task.id] = task
-
-    local file = task.file
-    if file then
-        self.taskFileMap[task] = file
+    if existing ~= task then
+        self.idMap[task.id] = task
     end
 
     if task.type == "suite" and task.tasks then

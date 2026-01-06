@@ -28,11 +28,15 @@
     "arrayIndex": false,
     "docBaseConstMatchBaseType": true,
     "metaOverrideFileDefine": true,
-    "requirePath": true
+    "requirePath": true,
+    "requireExportGlobal": true
   },
   "workspace": {
     "enableReindex": true,
     "packageDirs": [],
     "reindexDuration": 5000
+  },
+  "completion": {
+    "baseFunctionIncludesName": false
   }
 }

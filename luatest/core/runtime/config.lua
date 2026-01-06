@@ -9,3 +9,4 @@
 ---@field bail? integer 当指定数量的测试失败时停止测试执行, 默认不中止
 ---@field isolate boolean 隔离运行每个测试文件
 ---@field sequence {shuffle?: boolean, seed?: number}
+---@field reporters? any[] 报告器列表

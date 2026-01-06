@@ -5,6 +5,7 @@ local startTests = require("luatest.runner.run").startTests
 local collectTests = require("luatest.runner.collect").collectTests
 local tu = require("luatest.core.integrations.luatest-utils").tu
 local nowMs = require("luatest.utils.helpers").nowMs
+
 ---@namespace Luatest
 
 ---@export namespace

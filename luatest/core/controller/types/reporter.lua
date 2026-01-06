@@ -2,10 +2,22 @@
 
 
 ---@class Reporter
----@field onTestRunStart fun(self: self) # 测试运行开始
----@field onTestRunFinished fun(self: self)? # 测试运行结束
+---@field onInit fun(self: self, ctx: ReporterContext)? # reporter 初始化
+---@field onTestRunStart fun(self: self, files: string[])? # 测试运行开始
+---@field onTestRunEnd fun(self: self, modules: any[], errors: any[], reason: "passed"|"failed")? # 测试运行结束
+---@field onTestRunFinished fun(self: self)? # 测试运行结束(兼容旧接口)
 ---@field onQueued fun(self: self, file: File)? # 单个文件进入队列(开始收集前)
 ---@field onCollected fun(self: self, files: File[])? # 收集完成后的回调(收到完整任务树)
----@field onTaskUpdate fun(self: self, update: TaskResultPack[], events: TaskEventPack[]) # 任务更新
----@field onTaskArtifactRecord fun(self: self, testId: string, artifact: any): any? # 任务产物/注解记录
----@field onAfterSuiteRun fun(self: self, meta: any)? # suite 运行后的 meta (例如 coverage)
+---@field onTaskUpdate fun(self: self, update: TaskResultPack[], events: TaskEventPack[]) # 任务更新(原始上报)
+---@field onTestModuleQueued fun(self: self, testModule: TestModule)? # 文件进入队列(Reporter 实体)
+---@field onTestModuleCollected fun(self: self, testModule: TestModule)? # 文件收集完成(Reporter 实体)
+---@field onTestModuleStart fun(self: self, testModule: TestModule)? # 文件开始执行(由事件翻译)
+---@field onTestModuleEnd fun(self: self, testModule: TestModule)? # 文件执行结束(由事件翻译)
+---@field onTestSuiteReady fun(self: self, testSuite: TestSuite)? # suite 准备开始(由事件翻译)
+---@field onTestSuiteResult fun(self: self, testSuite: TestSuite)? # suite 结束(由事件翻译)
+---@field onTestCaseReady fun(self: self, testCase: TestCase)? # test 准备开始(由事件翻译)
+---@field onTestCaseResult fun(self: self, testCase: TestCase)? # test 结束(由事件翻译)
+---@field onHookStart fun(self: self, hook: { name: string, entity: any }, data: any)? # hook start(由事件翻译)
+---@field onHookEnd fun(self: self, hook: { name: string, entity: any }, data: any)? # hook end(由事件翻译)
+---@field onUserConsoleLog fun(self: self, log: any)? # console 日志(暂未实现采集)
+---@field onCoverage fun(self: self, coverage: any)? # coverage(暂未实现)

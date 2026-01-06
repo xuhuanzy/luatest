@@ -72,6 +72,7 @@
 ---@field environmentLoad number? 环境加载/重置耗时(ms)
 ---@field collectDuration number? 收集所有测试所需的时间(ms)
 ---@field setupDuration number? 导入`setup`文件所需的时间(ms)
+---@field local boolean? 文件是否在未运行任何测试的情况下被启动
 
 ---@class TaskPopulated: TaskBase
 ---@field file File 文件任务, 这是文件的根任务

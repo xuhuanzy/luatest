@@ -6,9 +6,11 @@ local configDefaults = {
     restoreMocks = false,
     unstubGlobals = false,
     isolate = true,
+    windowed = true,
     sequence = {
         shuffle = false,
-    }
+    },
+    reporters = { "default" },
 }
 
 return configDefaults
