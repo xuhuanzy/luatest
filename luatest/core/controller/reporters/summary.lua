@@ -33,12 +33,21 @@ function SummaryReporter:startRenderer()
     })
     self.renderer:start()
     self.renderer:schedule()
+
+    if ctx.logger and type(ctx.logger.attachRenderer) == "function" then
+        ctx.logger:attachRenderer(self.renderer)
+    end
 end
 
 function SummaryReporter:stopRenderer()
     if not self.renderer then
         return
     end
+
+    if self.ctx and self.ctx.logger and type(self.ctx.logger.detachRenderer) == "function" then
+        self.ctx.logger:detachRenderer(self.renderer)
+    end
+
     self.renderer:finish()
     self.renderer:stop()
     self.renderer = nil

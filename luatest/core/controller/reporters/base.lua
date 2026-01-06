@@ -1,6 +1,7 @@
 ---@namespace Luatest
 
 local Class = require("luatest.utils.class")
+local renderUtils = require("luatest.core.controller.reporters.renderers.utils")
 
 ---@class BaseReporter: Reporter
 ---@field protected ctx ReporterContext
@@ -22,6 +23,17 @@ end
 ---@param stream file
 ---@param message string
 function BaseReporter:write(stream, message)
+    local ctx = self.ctx
+    local logger = ctx and ctx.logger or nil
+    if logger and type(logger.write) == "function" then
+        local type = "output"
+        if ctx and ctx.errorStream == stream then
+            type = "error"
+        end
+        logger:write(message, type)
+        return
+    end
+
     stream:write(message)
     stream:flush()
 end
@@ -130,15 +142,20 @@ end
 ---@return string[]
 function BaseReporter:getSummaryLines()
     local state = self.ctx.state
-    local fileCounts = self:collectFileCounts(state)
-    local testCounts = self:collectTestCounts(state)
+    local files = state:getFiles()
+    local tests = {}
+    for _, task in pairs(state.idMap) do
+        if task and task.type == "test" then
+            tests[#tests + 1] = task
+        end
+    end
     local duration = state:getRunDurationMs()
     return {
         "",
-        self:padSummaryTitle("Test Files") .. self:formatCounts(fileCounts),
-        self:padSummaryTitle("Tests") .. self:formatCounts(testCounts),
-        self:padSummaryTitle("Start at") .. (state.runStartAt or ""),
-        self:padSummaryTitle("Duration") .. self:formatTime(duration),
+        renderUtils.padSummaryTitle("Test Files") .. renderUtils.getStateString(files),
+        renderUtils.padSummaryTitle("Tests") .. renderUtils.getStateString(tests),
+        renderUtils.padSummaryTitle("Start at") .. (state.runStartAt or ""),
+        renderUtils.padSummaryTitle("Duration") .. renderUtils.formatTime(duration),
         "",
     }
 end

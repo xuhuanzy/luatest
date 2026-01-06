@@ -26,7 +26,7 @@ function DefaultReporter:isWindowedEnabled()
     if self.options.windowed == false then
         return false
     end
-    if self.ctx and self.ctx.config then
+    if self.ctx and self.ctx.config and self.ctx.config.windowed == false then
         return false
     end
     return colored.isSupported()

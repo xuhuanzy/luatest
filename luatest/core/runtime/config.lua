@@ -8,5 +8,7 @@
 ---@field unstubGlobals boolean 恢复所有以`tu.stubGlobal`设置的全局变量
 ---@field bail? integer 当指定数量的测试失败时停止测试执行, 默认不中止
 ---@field isolate boolean 隔离运行每个测试文件
+---@field windowed? boolean 是否启用 windowed summary 渲染
 ---@field sequence {shuffle?: boolean, seed?: number}
 ---@field reporters? any[] 报告器列表
+---@field clearScreen? boolean 是否允许清屏(保留字段, 暂未实现 watch 模式)

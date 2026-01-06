@@ -3,6 +3,7 @@
 ---@class ReporterContext
 ---@field state StateManager
 ---@field config SerializedConfig
+---@field logger Logger
 ---@field outputStream file
 ---@field errorStream file
 ---@field getColumns? fun(): integer
