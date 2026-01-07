@@ -226,7 +226,7 @@ end
 ---@return ReportedModuleState
 function TestModule:state()
     local state = self.task.result and self.task.result.state or nil
-    if state == "queued" or self.task.mode == "queued" then
+    if state == "queued" or (state == nil and self.task.mode == "queued") then
         return "queued"
     end
     return getSuiteState(self.task)

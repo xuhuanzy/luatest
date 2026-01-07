@@ -5,6 +5,8 @@ local TestRun = require("luatest.core.controller.test-run")
 local resolveConfig = require("luatest.core.controller.config.resolveConfig").resolveConfig
 local createReporterManager = require("luatest.core.controller.reporters").createReporterManager
 local Logger = require("luatest.core.controller.logger")
+local tty = require("luatest.utils.tty")
+local testState = require("luatest.runner.test-state")
 
 ---@class Luatest
 ---@field state StateManager
@@ -29,12 +31,7 @@ end
 
 ---@return integer
 local function defaultGetColumns()
-    local env = os.getenv("COLUMNS")
-    local n = env and tonumber(env) or nil
-    if n and n > 0 then
-        return math.floor(n)
-    end
-    return 80
+    return tty.getColumns()
 end
 
 ---@param ctx WorkerExecuteContext
@@ -67,6 +64,7 @@ function Luatest:start(ctx)
     }
 
     self.reporterManager = createReporterManager(reporterCtx, config.reporters)
+    local reporterManager = self.reporterManager
 
     self.testRun:start(ctx.files or {})
 
@@ -74,15 +72,31 @@ function Luatest:start(ctx)
     local originalPrint = rawget(_G, "print")
     rawset(_G, "print", function(...)
         local args = { ... }
+
+        local message
         if #args == 0 then
-            logger:log("\n")
+            message = "\n"
+        else
+            for i = 1, #args do
+                args[i] = tostring(args[i])
+            end
+            message = table.concat(args, "\t") .. "\n"
+        end
+
+        local current = testState.getCurrentTest and testState.getCurrentTest() or nil
+        local currentSuite = testState.getCurrentSuite and testState.getCurrentSuite() or nil
+        local currentTask = current or currentSuite
+
+        if currentTask and currentTask.id and reporterManager then
+            reporterManager:report("onUserConsoleLog", {
+                type = "stdout",
+                content = message,
+                taskId = currentTask.id,
+            })
             return
         end
 
-        for i = 1, #args do
-            args[i] = tostring(args[i])
-        end
-        logger:log(table.concat(args, "\t") .. "\n")
+        logger:log(message)
     end)
 
     local ok, err = pcall(function()

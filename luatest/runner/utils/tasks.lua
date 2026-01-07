@@ -181,7 +181,7 @@ end
 local function createTaskName(names, separator)
     separator = separator or ' > '
     local filtered = {}
-    for _, name in ipairs(names) do
+    for _, name in pairs(names) do
         if name ~= nil and name ~= '' then
             table.insert(filtered, name)
         end

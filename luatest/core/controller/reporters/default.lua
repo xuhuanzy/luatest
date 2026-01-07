@@ -3,10 +3,11 @@
 local BaseReporter = require("luatest.core.controller.reporters.base").BaseReporter
 local SummaryReporter = require("luatest.core.controller.reporters.summary").SummaryReporter
 local Class = require("luatest.utils.class")
-local colored = require("luatest.utils.colored")
+local tty = require("luatest.utils.tty")
 
 ---@class DefaultReporterOptions
 ---@field windowed boolean?
+---@field summary boolean?
 ---@field interval? integer
 
 ---@class DefaultReporter: BaseReporter
@@ -23,13 +24,19 @@ end
 
 ---@return boolean
 function DefaultReporter:isWindowedEnabled()
+    if self.options.summary == false then
+        return false
+    end
     if self.options.windowed == false then
         return false
     end
     if self.ctx and self.ctx.config and self.ctx.config.windowed == false then
         return false
     end
-    return colored.isSupported()
+    if not tty.isTTY() then
+        return false
+    end
+    return true
 end
 
 ---@param ctx ReporterContext
@@ -43,6 +50,7 @@ end
 
 ---@param files string[]
 function DefaultReporter:onTestRunStart(files)
+    BaseReporter.onTestRunStart(self, files)
     if self.summary then
         self.summary:onTestRunStart(files)
     end
@@ -67,6 +75,58 @@ end
 function DefaultReporter:onTaskUpdate(update, events)
     if self.summary then
         self.summary:onTaskUpdate(update, events)
+    end
+end
+
+---@param module TestModule
+function DefaultReporter:onTestModuleQueued(module)
+    if self.summary then
+        self.summary:onTestModuleQueued(module)
+    end
+end
+
+---@param module TestModule
+function DefaultReporter:onTestModuleCollected(module)
+    if self.summary then
+        self.summary:onTestModuleCollected(module)
+    end
+end
+
+---@param module TestModule
+function DefaultReporter:onTestModuleEnd(module)
+    BaseReporter.onTestModuleEnd(self, module)
+    if self.summary then
+        self.summary:onTestModuleEnd(module)
+    end
+end
+
+---@param test TestCase
+function DefaultReporter:onTestCaseReady(test)
+    if self.summary and self.summary.onTestCaseReady then
+        self.summary:onTestCaseReady(test)
+    end
+end
+
+---@param test TestCase
+function DefaultReporter:onTestCaseResult(test)
+    if self.summary then
+        self.summary:onTestCaseResult(test)
+    end
+end
+
+---@param hook ReportedHookContext
+---@param data? any
+function DefaultReporter:onHookStart(hook, data)
+    if self.summary and self.summary.onHookStart then
+        self.summary:onHookStart(hook, data)
+    end
+end
+
+---@param hook ReportedHookContext
+---@param data? any
+function DefaultReporter:onHookEnd(hook, data)
+    if self.summary and self.summary.onHookEnd then
+        self.summary:onHookEnd(hook, data)
     end
 end
 

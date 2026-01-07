@@ -1,6 +1,7 @@
 ---@namespace Luatest
 
 local colored = require("luatest.utils.colored")
+local tty = require("luatest.utils.tty")
 local figures = require("luatest.core.controller.reporters.renderers.figures")
 local stripVTControlCharacters =
     require("luatest.core.controller.reporters.renderers.windowedRenderer").stripVTControlCharacters
@@ -40,12 +41,8 @@ end
 ---@param delta? integer
 ---@return integer
 local function getCols(delta)
-    local env = os.getenv("COLUMNS")
-    local length = env and tonumber(env) or nil
-    if not length or length ~= length then
-        length = 30
-    end
-    return math.max(math.floor(length) + (delta or 0), 0)
+    local length = tty.getColumns()
+    return math.max(length + (delta or 0), 0)
 end
 
 ---@param message string
@@ -114,7 +111,7 @@ end
 local function basename(path, ext)
     path = slash(path)
     local base = path:match("([^/]+)$") or path
-    if ext and ext ~= "" and base:sub(-#ext) == ext then
+    if ext and ext ~= "" and base:sub(- #ext) == ext then
         return base:sub(1, #base - #ext)
     end
     return base

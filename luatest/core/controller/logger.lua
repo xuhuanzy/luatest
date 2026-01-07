@@ -1,7 +1,7 @@
 ---@namespace Luatest
 
 local Class = require("luatest.utils.class")
-local colored = require("luatest.utils.colored")
+local tty = require("luatest.utils.tty")
 
 local ESC = "\27["
 local ERASE_DOWN = ESC .. "J"
@@ -47,8 +47,8 @@ function Logger:__init(options)
     self.cursorHidden = false
 end
 
----@param type? LoggerStreamType
 ---@param message string
+---@param streamType? LoggerStreamType
 function Logger:write(message, streamType)
     streamType = streamType or "output"
     if message == nil or message == "" then
@@ -68,6 +68,7 @@ function Logger:write(message, streamType)
     stream:flush()
 end
 
+---@private
 function Logger:_clearScreen()
     if self.clearScreenPending == nil then
         return
@@ -149,7 +150,7 @@ function Logger:hideCursor()
     if self.cursorHidden then
         return
     end
-    if not colored.isSupported() then
+    if not tty.isTTY() then
         return
     end
     self:write(HIDE_CURSOR, "output")

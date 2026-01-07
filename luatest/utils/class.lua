@@ -8,7 +8,7 @@ local export = {}
 ---@field package __super? Class
 ---@field package __index any
 ---@field super fun<Super>(obj: table, ...: ConstructorParameters<Super>...)
----@field new fun<T>(...: ConstructorParameters<T>...): T
+---@field new fun(...: ConstructorParameters<self>...): self
 
 ---@type table<string, Class>
 local classes = {}
@@ -104,6 +104,7 @@ end
 ---@return T
 function export.new(name, ...)
     local class = normalizeClass(name)
+    ---@diagnostic disable-next-line: param-type-mismatch
     return class.new(...)
 end
 

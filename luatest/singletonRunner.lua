@@ -18,7 +18,7 @@ return setmetatable({}, {
 
         -- 检查是否为单文件直接运行
         if not arg or not arg[0] then
-            error("require('luatest.runner')() 只能在直接运行测试文件时调用", 2)
+            error("require('luatest.singletonRunner')() 只能在直接运行测试文件时调用", 2)
         end
 
         local currentFile = arg[0]
