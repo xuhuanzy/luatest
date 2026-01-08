@@ -56,7 +56,7 @@ function BaseReporter:write(stream, message)
         if ctx and ctx.errorStream == stream then
             type = "error"
         end
-        logger:write(message, type)
+        logger:write(message, type --[[@as "output"|"error" ]])
         return
     end
 
@@ -396,7 +396,8 @@ function BaseReporter:onTestModuleEnd(module)
 
             local icon = renderUtils.getStateSymbol(test.task)
             local duration = test.task and test.task.result and test.task.result.duration or 0
-            lines[#lines + 1] = "     " .. string.rep(" ", indent) .. icon .. " " .. name .. padding .. formatColoredMs(duration)
+            lines[#lines + 1] = "     " ..
+                string.rep(" ", indent) .. icon .. " " .. name .. padding .. formatColoredMs(duration)
         end
     end
 
@@ -535,7 +536,8 @@ local function formatTaskError(err)
     end
 
     if type(err) == "string" then
-        -- assertion errors in Lua may be prefixed with location and also start with extra newlines
+        ---@diagnostic disable-next-line: incomplete-signature-doc, redundant-return-value
+        -- Lua中的断言错误可能带有位置前缀, 并且可能以额外的换行符开头
         return err:gsub("\r\n", "\n"):gsub(":%s*\n\n", ":\n")
     end
 
@@ -551,6 +553,7 @@ local function formatTaskError(err)
             parts[#parts + 1] = err.stack
         end
         if #parts > 0 then
+            ---@diagnostic disable-next-line: incomplete-signature-doc, redundant-return-value
             return table.concat(parts, "\n"):gsub("\r\n", "\n")
         end
     end

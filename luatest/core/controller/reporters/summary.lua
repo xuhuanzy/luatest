@@ -119,6 +119,7 @@ function SummaryReporter:startRenderer()
     self.renderer = WindowRenderer.new({
         outputStream = ctx.outputStream,
         errorStream = ctx.errorStream,
+        ---@diagnostic disable-next-line: assign-type-mismatch
         getColumns = ctx.getColumns,
         interval = self.interval,
         getWindow = function()

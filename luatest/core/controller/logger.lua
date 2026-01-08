@@ -11,8 +11,6 @@ local HIDE_CURSOR = ESC .. "?25l"
 local SHOW_CURSOR = ESC .. "?25h"
 local CLEAR_SCREEN = "\27c"
 
----@alias LoggerStreamType "output"|"error"
-
 ---@class LoggerOptions
 ---@field outputStream? file
 ---@field errorStream? file
@@ -48,7 +46,7 @@ function Logger:__init(options)
 end
 
 ---@param message string
----@param streamType? LoggerStreamType
+---@param streamType? "output"|"error"
 function Logger:write(message, streamType)
     streamType = streamType or "output"
     if message == nil or message == "" then

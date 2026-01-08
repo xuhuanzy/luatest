@@ -81,6 +81,8 @@
 ## Important Constraints
 - Lua 版本：最低 Lua 5.4.8
 - 暂不实现：Artifacts（artifact/attachment 等）与 Annotations/Annotate（用例注解/标注等）；相关能力不存储、不上报、不渲染
+- 当遇到以 `packages/`（Windows 上可能显示为 `packages\`）开头的路径时，通常是在访问 Vitest 的源码（对应 `.upstream/vitest/packages/`），仅用于对照参考
+- 我们**禁止修改** `.upstream/` 文件夹下的任何内容（只允许读取）
 - `spec/example.test.lua` 是用于观察整个测试流程与 reporter 输出是否正确的入口用例；除非用户明确要求，否则**绝对禁止修改**该文件内容（包括用例结构、断言、输出、依赖等）
 - 当前实现状态（供 AI 协作时避坑）：
   - `bin/luatest.lua` 目前为注释状态，CLI 尚未启用

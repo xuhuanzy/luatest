@@ -301,6 +301,7 @@ function export.getStateSymbol(task)
             return export.pointer
         end
     end
+    ---@cast task.result -?
 
     if task.result.state == "pass" then
         if task.meta and task.meta.benchmark then
@@ -347,12 +348,12 @@ end
 ---@return string
 function export.formatTimeString(date)
     if type(date) == "table" then
-        return os.date("%H:%M:%S", os.time(date))
+        return os.date("%H:%M:%S", os.time(date)) ---@as string
     end
     if type(date) == "number" then
-        return os.date("%H:%M:%S", date)
+        return os.date("%H:%M:%S", date) ---@as string
     end
-    return os.date("%H:%M:%S")
+    return os.date("%H:%M:%S") ---@as string
 end
 
 ---@param timeMs number
@@ -389,6 +390,7 @@ function export.formatProjectName(project, suffix)
         end
         background = labelDefaultColors[(index % #labelDefaultColors) + 1]
     end
+    ---@cast background -?
 
     return c.black(background(" " .. tostring(project.name) .. " ")) .. suffix
 end
