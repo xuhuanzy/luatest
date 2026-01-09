@@ -1,7 +1,4 @@
--- 测试用例示例
--- 演示如何使用 luatest API
--- 如果是直接运行此文件，执行测试
-require("luatest.runner")()
+require('luatest.singletonRunner')()
 
 local luatest = require("luatest")
 local describe = luatest.describe
@@ -21,15 +18,19 @@ describe("示例测试套件", function()
     afterEach(function(ctx)
         print(string.format("  [afterEach] counter = %d", counter))
     end)
-
     test("简单测试", function(ctx)
-        print("    [test] 执行简单测试")
+        print("    [test] 执行简单测试开始")
+        require("socket").sleep(2)
+        print("    [test] 执行简单测试中")
         assert(1 + 1 == 2, "1 + 1 应该等于 2")
+        require("socket").sleep(2)
+        print("    [test] 执行简单测试结束")
     end)
 
     it("使用 it 别名", function(ctx)
+        require("socket").sleep(2)
         print("    [it] 执行 it 测试")
-        assert(type("hello") == "string", "应该是字符串类型")
+        assert(type("hello") == "nil", "应该是字符串类型")
     end)
 
     test("测试上下文", function(ctx)
@@ -40,8 +41,8 @@ describe("示例测试套件", function()
 
     describe("嵌套套件", function()
         test("嵌套测试1", function(ctx)
-            print("      [nested] 嵌套测试1")
-            assert(counter > 0, "counter 应该大于 0")
+            print("      [nested] 嵌套测试1 失败")
+            assert(counter < 0, "counter 应该大于 0")
         end)
 
         test("嵌套测试2", function(ctx)
@@ -52,7 +53,8 @@ describe("示例测试套件", function()
 end)
 
 describe("B", function()
-    test('B1', function()
+    ---@diagnostic disable-next-line: undefined-field
+    test.skip('B1', function()
         assert(true, "总是通过")
     end)
 end)
