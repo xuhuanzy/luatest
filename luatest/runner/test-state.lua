@@ -6,6 +6,9 @@ local export = {}
 ---@type Test?
 local _test
 
+---@type Suite?
+local _suite
+
 -- 设置当前测试
 ---@param test Test?
 export.setCurrentTest = function(test)
@@ -16,6 +19,18 @@ end
 ---@return Test?
 export.getCurrentTest = function()
     return _test
+end
+
+-- 设置运行期中的 suite
+---@param suite Suite?
+export.setCurrentSuite = function(suite)
+    _suite = suite
+end
+
+-- 获取运行期中的 suite
+---@return Suite?
+export.getCurrentSuite = function()
+    return _suite
 end
 
 ---@type table<Test, true>

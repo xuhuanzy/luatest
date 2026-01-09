@@ -11,4 +11,4 @@
 ---@field windowed? boolean 是否启用 windowed summary 渲染
 ---@field sequence {shuffle?: boolean, seed?: number}
 ---@field reporters? any[] 报告器列表
----@field clearScreen? boolean 是否允许清屏(保留字段, 暂未实现 watch 模式)
+---@field clearScreen? boolean 是否允许清屏

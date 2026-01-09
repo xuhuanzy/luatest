@@ -8,6 +8,8 @@ local hasFailed = require("luatest.runner.utils.tasks").hasFailed
 local collectTests = require("luatest.runner.collect").collectTests
 local nowMs = require("luatest.utils.helpers").nowMs
 local unixNow = require("luatest.utils.helpers").unixNow
+local getCurrentSuite = require("luatest.runner.test-state").getCurrentSuite
+local setCurrentSuite = require("luatest.runner.test-state").setCurrentSuite
 local now = os.clock
 
 ---@namespace Luatest
@@ -420,6 +422,8 @@ end
 ---@param suite Suite
 ---@param runner Runner
 function export.runSuite(suite, runner)
+    local prevSuite = getCurrentSuite()
+    setCurrentSuite(suite)
     -- 运行前回调
     if runner.onBeforeRunSuite then
         runner:onBeforeRunSuite(suite)
@@ -429,6 +433,7 @@ function export.runSuite(suite, runner)
     if suite.result and suite.result.state == "fail" then
         markTasksAsSkipped(suite, runner)
         updateTask("suite-failed-early", suite, runner)
+        setCurrentSuite(prevSuite)
         return
     end
 
@@ -522,6 +527,8 @@ function export.runSuite(suite, runner)
 
         updateTask("suite-finished", suite, runner)
     end
+
+    setCurrentSuite(prevSuite)
 end
 
 -- 执行多个文件
