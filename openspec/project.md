@@ -53,7 +53,7 @@
   - 推荐写法：`local luatest = require("luatest")`，使用 `describe/test/it` 与 hooks
   - 运行方式：
     - 单文件：在测试文件顶部调用 `require("luatest.singletonRunner")()`，然后执行 `lua spec/xxx.test.lua`
-    - 或者自行编写入口脚本调用 `require("luatest.core.controller.core").new():start({ files = {...} })`
+    - 或者自行编写入口脚本调用 `require("luatest.core").run({ files = {...} })`（返回 `RunResult`，由上层决定 `os.exit(code)`）
 - 冒烟/调试脚本：`scripts/test_*.lua`（例如 `lua scripts/test_state_manager.lua`）
 - 约束：
   - runner 禁止在一个 test 执行期间再次调用 `test()` 定义新测试（必须放在 `describe`/suite 收集阶段）
@@ -65,7 +65,7 @@
   - type：`feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
   - breaking change：使用 `!` 或 footer `BREAKING CHANGE: ...`
 - 合并：推荐 squash merge；squash message 也必须是合规 Conventional Commit
-- 当前阶段不把测试作为合并门禁：目前暂无标准化测试结果输出/退出码（主要用于本地手动调试）
+- 当前阶段不把测试作为合并门禁：CI 尚未接入；但 `core.run()`/CLI 已返回标准化 `exitCode`
 
 ## Domain Context
 - 核心对象模型（Task）：
@@ -85,7 +85,7 @@
 - 我们**禁止修改** `.upstream/` 文件夹下的任何内容（只允许读取）
 - `spec/example.test.lua` 是用于观察整个测试流程与 reporter 输出是否正确的入口用例；除非用户明确要求，否则**绝对禁止修改**该文件内容（包括用例结构、断言、输出、依赖等）
 - 当前实现状态（供 AI 协作时避坑）：
-  - `bin/luatest.lua` 目前为注释状态，CLI 尚未启用
+  - `bin/luatest.lua` 已提供最小 CLI（支持 root/config/include/exclude/reporter，并明确拒绝 watch）
   - `luatest-dev-1.rockspec` 的 modules 列表存在未同步项（例如引用了不存在的 `luatest/utils/utils.lua`），发布/打包前需校验
 
 ## External Dependencies
