@@ -17,7 +17,8 @@ local export = {}
 ---@field files? string[]
 ---@field include? string[]|string
 ---@field exclude? string[]|string
----@field configFile? string
+---@field reporters? string[]
+---@field cliOverrides? table
 ---@field configOverrides? table
 ---@field outputStream? file
 ---@field errorStream? file
@@ -48,6 +49,56 @@ local function countTests(state)
     return count
 end
 
+---@return RunSummary
+local function emptySummary()
+    return {
+        startAt = nil,
+        durationMs = 0,
+        files = 0,
+        tests = 0,
+        failedTests = 0,
+    }
+end
+
+---@param errors any[]
+---@param errorStream file
+local function printErrors(errors, errorStream)
+    for _, e in ipairs(errors or {}) do
+        errorStream:write((e.message or tostring(e)) .. "\n")
+    end
+    errorStream:flush()
+end
+
+---@param options RunOptions
+---@return table
+local function collectRuntimeOverrides(options)
+    local overrides = {}
+
+    local function merge(from)
+        if type(from) ~= "table" then
+            return
+        end
+        for key, value in pairs(from) do
+            overrides[key] = value
+        end
+    end
+
+    merge(options.configOverrides)
+    merge(options.cliOverrides)
+
+    if options.include ~= nil then
+        overrides.include = options.include
+    end
+    if options.exclude ~= nil then
+        overrides.exclude = options.exclude
+    end
+    if options.reporters ~= nil then
+        overrides.reporters = options.reporters
+    end
+
+    return overrides
+end
+
 ---@param options RunOptions?
 ---@return RunResult
 function export.run(options)
@@ -55,44 +106,21 @@ function export.run(options)
     local outputStream = options.outputStream or io.stdout
     local errorStream = options.errorStream or io.stderr
 
-    local overrides = {}
-    if type(options.configOverrides) == "table" then
-        for k, v in pairs(options.configOverrides) do
-            overrides[k] = v
-        end
-    end
-    if options.include ~= nil then
-        overrides.include = options.include
-    end
-    if options.exclude ~= nil then
-        overrides.exclude = options.exclude
-    end
-
     local configResult = resolveConfig({
         cwd = options.cwd,
         root = options.root,
-        configFile = options.configFile,
-        configOverrides = overrides,
+        cliOverrides = collectRuntimeOverrides(options),
     })
 
     if not configResult.ok then
         local errors = configResult.errors or {}
-        for _, e in ipairs(errors) do
-            errorStream:write((e.message or tostring(e)) .. "\n")
-        end
-        errorStream:flush()
+        printErrors(errors, errorStream)
         return {
             exitCode = 1,
             config = configResult.config,
             state = nil,
             errors = errors,
-            summary = {
-                startAt = nil,
-                durationMs = 0,
-                files = 0,
-                tests = 0,
-                failedTests = 0,
-            },
+            summary = emptySummary(),
         }
     end
     ---@cast configResult.config -?
@@ -110,22 +138,13 @@ function export.run(options)
 
     if not filesResult.ok then
         local errors = filesResult.errors or {}
-        for _, e in ipairs(errors) do
-            errorStream:write((e.message or tostring(e)) .. "\n")
-        end
-        errorStream:flush()
+        printErrors(errors, errorStream)
         return {
             exitCode = 1,
             config = config,
             state = nil,
             errors = errors,
-            summary = {
-                startAt = nil,
-                durationMs = 0,
-                files = 0,
-                tests = 0,
-                failedTests = 0,
-            },
+            summary = emptySummary(),
         }
     end
 
@@ -138,13 +157,7 @@ function export.run(options)
                 config = config,
                 state = nil,
                 errors = {},
-                summary = {
-                    startAt = nil,
-                    durationMs = 0,
-                    files = 0,
-                    tests = 0,
-                    failedTests = 0,
-                },
+                summary = emptySummary(),
             }
         end
         errorStream:write("No test files found\n")
@@ -154,17 +167,15 @@ function export.run(options)
             config = config,
             state = nil,
             errors = { { message = "No test files found" } },
-            summary = {
-                startAt = nil,
-                durationMs = 0,
-                files = 0,
-                tests = 0,
-                failedTests = 0,
-            },
+            summary = emptySummary(),
         }
     end
 
-    local luatest = Luatest.new()
+    local luatest = Luatest.new({
+        root = config.root,
+        projectName = config.name,
+    })
+
     bootstrap.markRunStarted()
     local ok = pcall(function()
         luatest:start({
@@ -204,3 +215,4 @@ function export.run(options)
 end
 
 return export
+

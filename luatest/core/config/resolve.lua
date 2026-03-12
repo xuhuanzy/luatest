@@ -48,6 +48,27 @@ local function loadError(path, source, message)
     }
 end
 
+---@param path string
+---@return table|nil, LuatestConfigError?
+local function loadRootConfig(path)
+    local env = setmetatable({}, { __index = _G })
+    local chunk, err = loadfile(path, "t", env)
+    if not chunk then
+        return nil, loadError("rootConfig", "rootConfig", tostring(err))
+    end
+    local ok, result = pcall(chunk)
+    if not ok then
+        return nil, loadError("rootConfig", "rootConfig", tostring(result))
+    end
+    if result == nil then
+        return {}, nil
+    end
+    if type(result) ~= "table" then
+        return nil, configError("rootConfig", "table", result, "rootConfig", "root config file must return a table")
+    end
+    return result, nil
+end
+
 ---@param t table
 ---@return boolean
 local function isArray(t)
@@ -293,37 +314,16 @@ local function normalizeConfig(config, root)
     config.exclude = normalizeStringList(config.exclude)
 end
 
----@param path string
----@return table|nil, LuatestConfigError?
-local function loadConfigFile(path)
-    local env = setmetatable({}, { __index = _G })
-    local chunk, err = loadfile(path, "t", env)
-    if not chunk then
-        return nil, loadError("configFile", "configFile", tostring(err))
-    end
-    local ok, result = pcall(chunk)
-    if not ok then
-        return nil, loadError("configFile", "configFile", tostring(result))
-    end
-    if result == nil then
-        return {}, nil
-    end
-    if type(result) ~= "table" then
-        return nil, configError("configFile", "table", result, "configFile", "config file must return a table")
-    end
-    return result, nil
-end
-
 ---@class ResolveConfigOptions
 ---@field cwd? string
 ---@field root? string
----@field configFile? string
+---@field cliOverrides? table
 ---@field configOverrides? table
 
 ---@class ResolveConfigResult
 ---@field ok boolean
 ---@field root string
----@field configFile string
+---@field rootConfigPath string
 ---@field config? table
 ---@field errors? LuatestConfigError[]
 ---@field sources? table<string,string>
@@ -334,6 +334,9 @@ function export.resolve(options)
     options = options or {}
 
     local cwd = options.cwd or fs.getCwd()
+    if type(cwd) ~= "string" or cwd == "" then
+        cwd = fs.getCwd()
+    end
     local root = options.root or cwd
     if type(root) ~= "string" or root == "" then
         root = cwd
@@ -342,37 +345,42 @@ function export.resolve(options)
         root = fs.toAbsolutePath(cwd, root)
     end
 
-    local configFile = options.configFile or fs.joinPath(root, "luatest.config.lua")
+    local rootConfigPath = fs.joinPath(root, "luatest.config.lua")
+
+    local runtimeOverrides = options.cliOverrides
+    if type(runtimeOverrides) ~= "table" and type(options.configOverrides) == "table" then
+        runtimeOverrides = options.configOverrides
+    end
 
     ---@type table
-    local fileConfig = {}
-    if fs.fileExists(configFile) then
-        local cfg, err = loadConfigFile(configFile)
+    local rootConfig = {}
+    if fs.fileExists(rootConfigPath) then
+        local cfg, err = loadRootConfig(rootConfigPath)
         if err then
-            return { ok = false, root = root, configFile = configFile, errors = { err } }
+            return { ok = false, root = root, rootConfigPath = rootConfigPath, errors = { err } }
         end
-        fileConfig = cfg or {}
+        rootConfig = cfg or {}
     end
 
     local resolved = deepCopy(defaults)
     ---@type table<string,string>
     local sources = {}
 
-    mergeInto(resolved, fileConfig, sources, "", "configFile")
-    if type(options.configOverrides) == "table" then
-        mergeInto(resolved, options.configOverrides, sources, "", "overrides")
+    mergeInto(resolved, rootConfig, sources, "", "rootConfig")
+    if type(runtimeOverrides) == "table" then
+        mergeInto(resolved, runtimeOverrides, sources, "", "cliOverrides")
     end
 
-    -- root is always taken from run options (not from config file) to keep IO predictable
+    -- root is always taken from run options (not from root config file) to keep IO predictable
     resolved.root = root
-    sources["root"] = options.root and "options" or (options.cwd and "options" or "cwd")
+    sources["root"] = options.root and "options.root" or "cwd"
 
     local validationErrors = validateConfig(resolved, sources)
     if validationErrors then
         return {
             ok = false,
             root = root,
-            configFile = configFile,
+            rootConfigPath = rootConfigPath,
             config = resolved,
             errors = validationErrors,
             sources = sources,
@@ -384,7 +392,7 @@ function export.resolve(options)
     return {
         ok = true,
         root = root,
-        configFile = configFile,
+        rootConfigPath = rootConfigPath,
         config = resolved,
         sources = sources,
     }

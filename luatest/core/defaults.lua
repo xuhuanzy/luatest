@@ -30,16 +30,12 @@ local configDefaults = {
     clearScreen = false,
     include = { "**/*.test.lua", "**/*.spec.lua" },
     exclude = {
-        "**/node_modules/**",
-        "**/dist/**",
-        "**/cypress/**",
         "**/.idea/**",
         "**/.git/**",
         "**/.cache/**",
         "**/out/**",
         "**/.output/**",
         "**/.temp/**",
-        "**/.upstream/**",
         "**/.tmp/**",
     },
 }

@@ -13,6 +13,10 @@ local tty = require("luatest.utils.tty")
 ---@field outputStream? file
 ---@field errorStream? file
 
+---@class ControllerOptions
+---@field root? string
+---@field projectName? string
+
 ---@class Luatest
 ---@field state StateManager
 ---@field testRun TestRun
@@ -22,10 +26,15 @@ local Luatest = {}
 Luatest.__index = Luatest ---@package
 
 ---@return Luatest
-function Luatest.new()
+---@param options? ControllerOptions
+function Luatest.new(options)
+    options = options or {}
     ---@type Partial<Luatest>
     local self = {
-        state = StateManager.new(),
+        state = StateManager.new({
+            root = options.root,
+            projectName = options.projectName,
+        }),
     }
     ---@cast self Luatest
     local testRun = TestRun.new(self)
@@ -45,7 +54,6 @@ end
 local function installPrintHook(logger, reporterManager)
     local testState = require("luatest.runner.test-state")
     local getCurrentTest = testState.getCurrentTest
-    local getCurrentSuite = testState.getCurrentSuite
 
     local originalPrint = rawget(_G, "print")
     local restored = false
@@ -97,6 +105,12 @@ function Luatest:start(ctx)
         error("Luatest:start(ctx) requires a resolved config table at ctx.config", 2)
     end
     self.config = config
+    if type(config.root) == "string" and config.root ~= "" then
+        self.state.root = config.root
+    end
+    if type(config.name) == "string" and config.name ~= "" then
+        self.state.projectName = config.name
+    end
 
     local outputStream = ctx.outputStream or io.stdout
     local errorStream = ctx.errorStream or io.stderr
