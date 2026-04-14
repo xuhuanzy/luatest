@@ -22,7 +22,7 @@ local DIM_COLOR = colored.dim
 local MAX_DIFF_STRING_LENGTH = 20000 ---@readonly 最大差异字符串长度
 local DEFAULT_MAX_DEPTH = 20 ---@readonly 默认最大递归深度
 
----@export namespace
+
 local export = {}
 
 local SPACE_SYMBOL = '·'
@@ -37,10 +37,14 @@ local function replaceTrailingSpaces(text)
     return result
 end
 
+---@param object any
+---@return string
 export.printReceived = function(object)
     return RECEIVED_COLOR(replaceTrailingSpaces(stringify(object)))
 end
 
+---@param value any
+---@return string
 export.printExpected = function(value)
     return EXPECTED_COLOR(replaceTrailingSpaces(stringify(value)))
 end
@@ -84,6 +88,8 @@ local function renderLine(marker, indent, text)
     return colorize(prefix .. stringRep("  ", indent) .. text)
 end
 
+---@param key any
+---@return string
 local function formatKey(key)
     local ty = type(key)
     if ty == "string" then
@@ -97,6 +103,8 @@ local function formatKey(key)
     return stringFormat("[%s]", tostring(key))
 end
 
+---@param value any
+---@return string
 local function formatPrimitive(value)
     local ty = type(value)
     if ty == "string" then
@@ -107,10 +115,15 @@ local function formatPrimitive(value)
     return stringFormat("<%s>", ty)
 end
 
+---@param a any
+---@param b any
+---@return boolean
 local function compareKeys(a, b)
     return tostring(a) < tostring(b)
 end
 
+---@param obj table
+---@return any[]
 local function sortedKeys(obj)
     local keys = {}
     for k, _ in pairs(obj) do
@@ -120,6 +133,10 @@ local function sortedKeys(obj)
     return keys
 end
 
+---@param marker string|nil
+---@param minusCount integer
+---@param plusCount integer
+---@return integer minusCount, integer plusCount
 local function applyMarker(marker, minusCount, plusCount)
     if marker == "-" then
         minusCount = minusCount + 1

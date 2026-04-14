@@ -25,6 +25,9 @@ local function create(context, keySet, fn)
     return chain
 end
 
+---@param self Chainable
+---@param key string
+---@return any
 meta.__index = function(self, key)
     if self.keySet[key] then
         -- 创建新的上下文并复制当前上下文
@@ -41,10 +44,15 @@ meta.__index = function(self, key)
     return rawget(self, key)
 end
 
+---@param self Chainable
+---@param ... any
+---@return any
 meta.__call = function(self, ...)
+    ---@diagnostic disable-next-line: call-non-callable
     return self.fn(self.context, ...)
 end
 
+---@param ctx table
 function meta:mergeContext(ctx)
     for k, v in pairs(ctx) do
         self.context[k] = v
@@ -65,5 +73,5 @@ local function createChainable(keys, fn)
     return chain
 end
 
----@export namespace
+
 return createChainable

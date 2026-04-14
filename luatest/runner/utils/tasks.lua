@@ -189,7 +189,6 @@ local function createTaskName(names, separator)
     return table.concat(filtered, separator)
 end
 
----@export namespace
 return {
     toArray = toArray,
     isTestCase = isTestCase,

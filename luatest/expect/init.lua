@@ -28,7 +28,7 @@ end
 
 
 ---@class ExpectApi
----@export namespace
+
 local Api = {
     expect = expect.globalExpect,
     mock = mock,

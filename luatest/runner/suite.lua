@@ -19,7 +19,7 @@ local withFixtures = require("luatest.runner.fixture").withFixtures
 
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 ---@type Runner
@@ -81,10 +81,15 @@ local TestMeta = {
 TestMeta.__index = TestMeta ---@package
 
 ---@package
+---@param self _Test
+---@param context table
+---@param ... any
 TestMeta.__call = function(self, context, ...)
     self.fn(context, ...)
 end
 
+---@param condition boolean
+---@return self
 function TestMeta:skipIf(condition)
     if condition then
         return self.skip
@@ -92,6 +97,8 @@ function TestMeta:skipIf(condition)
     return self
 end
 
+---@param condition boolean
+---@return self
 function TestMeta:runIf(condition)
     if condition then
         return self
@@ -153,7 +160,7 @@ end
 ---@param suiteOptions? TestOptions 套件选项
 ---@return SuiteCollector
 local function createSuiteCollector(name, factory, mode, suiteOptions)
-    factory = factory or function() end ---@type SuiteFactory
+    factory = factory or function() end ---@cast factory SuiteFactory
 
     ---@type (Test|Suite|SuiteCollector)[]
     local tasks = {}
@@ -369,8 +376,11 @@ end
 local SuiteMeta = {}
 SuiteMeta.__index = SuiteMeta ---@package
 
+---@param self _Suite
+---@param context table
 ---@param name string
 ---@param factoryOrOptions SuiteFactory | TestOptions
+---@return SuiteCollector
 SuiteMeta.__call = function(self, context, name, factoryOrOptions)
     local mode = "run" ---@type RunMode
     if context.only then

@@ -3,7 +3,7 @@ local PendingError = require("luatest.runner.errors").PendingError
 
 
 
----@export namespace
+
 local export = {}
 
 ---@class RuntimeContext

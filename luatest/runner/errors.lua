@@ -35,6 +35,9 @@ local TestRunAbortError = {
 }
 TestRunAbortError.__index = TestRunAbortError ---@package
 
+---@param message string
+---@param reason string
+---@return TestRunAbortError
 function TestRunAbortError:new(message, reason)
     ---@type Partial<TestRunAbortError>
     local o = {
@@ -44,10 +47,9 @@ function TestRunAbortError:new(message, reason)
     return setmetatable(o, TestRunAbortError)
 end
 
----@export namespace
 return {
-    ---@export namespace
+
     PendingError = PendingError,
-    ---@export namespace
+
     TestRunAbortError = TestRunAbortError,
 }

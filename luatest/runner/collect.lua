@@ -13,7 +13,7 @@ local calculateSuiteHash = require("luatest.runner.utils.collect").calculateSuit
 local someTasksAreOnly = require("luatest.runner.utils.collect").someTasksAreOnly
 local interpretTaskModes = require("luatest.runner.utils.collect").interpretTaskModes
 
----@export namespace
+
 local export = {}
 
 

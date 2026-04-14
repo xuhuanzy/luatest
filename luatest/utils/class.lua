@@ -1,6 +1,6 @@
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 ---@class Class

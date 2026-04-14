@@ -3,6 +3,7 @@
 ---@alias RunMode  'run' | 'skip' | 'only' | 'todo' | 'queued'
 
 ---@class SuiteAPI
+---@overload fun(name: string, fn: function): SuiteCollector
 
 ---@class TestAPI<ExtraContext: table>
 ---@overload fun(name: string, fn: function)

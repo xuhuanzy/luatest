@@ -14,7 +14,7 @@ local now = os.clock
 
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 
@@ -230,6 +230,7 @@ end
 local function markTasksAsSkipped(suite, runner)
     for _, t in ipairs(suite.tasks) do
         t.mode = "skip"
+        ---@diagnostic disable-next-line: assign-type-mismatch
         t.result = t.result or {}
         t.result.state = "skip"
         updateTask("test-finished", t, runner)

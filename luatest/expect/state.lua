@@ -11,7 +11,7 @@ if not _G[MATCHERS_OBJECT] then
     _G[MATCHERS_OBJECT] = globalState
 end
 
----@export namespace
+
 local export = {}
 
 ---@param expect ExpectStatic

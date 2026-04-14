@@ -34,7 +34,7 @@ local function getHooks(key)
     return hooksMap[key]
 end
 
----@export namespace
+
 return {
     setFn = setFn,
     getFn = getFn,

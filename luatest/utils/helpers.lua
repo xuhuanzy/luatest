@@ -6,7 +6,7 @@ local now = os.clock
 
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 export.NOOP = function() end

@@ -1,7 +1,6 @@
 local processError = require("luatest.utils.error").processError
 ---@namespace Luatest
 
----@export namespace
 local export = {}
 
 -- 生成字符串哈希

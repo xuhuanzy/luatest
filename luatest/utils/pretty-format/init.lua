@@ -9,7 +9,6 @@ local mathMin = math.min
 
 ---@namespace Luatest
 
----@export
 local export = {}
 
 ---@readonly
@@ -18,6 +17,8 @@ local DEFAULT_OPTIONS = {
     maxWidth = 2147483647,
 }
 
+---@param key any
+---@return string
 local function formatKey(key)
     if type(key) == "string" then
         return key
@@ -25,6 +26,8 @@ local function formatKey(key)
     return stringFormat("[%s]", tostring(key))
 end
 
+---@param key any
+---@return integer
 local function keyPriority(key)
     local keyType = type(key)
     if keyType == "string" then
@@ -37,6 +40,9 @@ local function keyPriority(key)
     return 4
 end
 
+---@param a any
+---@param b any
+---@return boolean
 local function keyComparator(a, b)
     local priorityA = keyPriority(a)
     local priorityB = keyPriority(b)

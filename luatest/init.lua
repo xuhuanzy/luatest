@@ -4,7 +4,6 @@
 local runner = require("luatest.runner")
 local expectApi = require("luatest.expect")
 
----@export global
 ---@class Luatest.Static
 local export = {}
 

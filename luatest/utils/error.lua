@@ -1,6 +1,6 @@
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 ---@param _err any

@@ -13,6 +13,9 @@ local RECEIVED_COLOR = matcherUtils.RECEIVED_COLOR
 local Assertion = {}
 
 ---@package
+---@param self Assertion
+---@param key string
+---@return any
 Assertion.__index = function(self, key)
     if key == "not_" then
         flag(self, "negate", true)

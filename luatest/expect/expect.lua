@@ -8,7 +8,7 @@ local getCurrentTest = require("luatest.runner.test-state").getCurrentTest
 local flag = require("luatest.expect.util").flag
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 ---@class ExpectStatic
@@ -25,6 +25,7 @@ expectStaticMeta.__index = expectStaticMeta
 ---@param self ExpectStatic
 ---@param actual any
 ---@param message? string
+---@return Assertion
 expectStaticMeta.__call = function(self, actual, message)
     local state = getState(self)
     setState({ assertionCalls = state.assertionCalls + 1 }, self)

@@ -2,7 +2,7 @@ local prettyFormat = require("luatest.utils.pretty-format").format
 
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 

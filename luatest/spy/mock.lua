@@ -110,6 +110,7 @@ Mock.__call = function(self, ...)
 end
 
 ---返回下一次执行所使用的实现函数
+---@return Procedure
 function Mock:getMockImplementation()
     return self.config.onceMockImplementations[1] or self.config.mockImplementation
 end
@@ -153,6 +154,7 @@ function Mock:mockReturnValueOnce(value)
 end
 
 ---清空所有记录但保留当前实现。
+---@return self
 function Mock:mockClear()
     self.state.calls = {}
     self.state.contexts = {}
@@ -163,6 +165,7 @@ function Mock:mockClear()
 end
 
 ---重置 mock, 将实现还原到创建时的状态.
+---@return self
 function Mock:mockReset()
     self:mockClear()
     local config = self.config
@@ -182,6 +185,7 @@ function Mock:mockReset()
     return self
 end
 
+---@return self
 function Mock:mockRestore()
     self:mockReset()
     if self.restoreConfig.restore then
@@ -190,6 +194,7 @@ function Mock:mockRestore()
     return self
 end
 
+---@return string
 function Mock:getMockName()
     return self.config.mockName or "mock.fn()"
 end
@@ -280,7 +285,7 @@ local function spyOn(object, key)
 
     local mockInstance = createMockInstance({
         originalImplementation = original,
-        restore = function ()
+        restore = function()
             object[key] = original
         end,
         captureInstance = defaultCaptureContext,
@@ -315,7 +320,7 @@ local function resetAllMocks()
     end
 end
 
----@export namespace
+
 ---@class MockStatic
 local export = {
     fn = fn,

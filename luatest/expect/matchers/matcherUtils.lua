@@ -6,7 +6,7 @@ local printExpected = require("luatest.utils.diff").printExpected
 local type = type
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 local EXPECTED_COLOR = colored.green

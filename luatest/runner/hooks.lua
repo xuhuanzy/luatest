@@ -2,7 +2,7 @@ local withFixtures = require("luatest.runner.fixture").withFixtures
 local getCurrentTest = require("luatest.runner.test-state").getCurrentTest
 ---@namespace Luatest
 
----@export namespace
+
 local export = {}
 
 -- 解决循环引用问题

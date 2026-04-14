@@ -19,7 +19,7 @@
 ---@field includeChangeCounts? boolean 是否在差异报告头部包含变化统计
 ---@field omitAnnotationLines? boolean 是否省略注释行
 ---@field patchColor? DiffOptionsColor 定义补丁信息(文件头信息等)的颜色
----@field maxDepth? number 在比较对象或数组时递归比较的最大深度
+---@field maxDepth? integer 在比较对象或数组时递归比较的最大深度
 ---@field compareKeys? fun(a: string, b: string): number 自定义美化输出比较键的函数
 ---@field truncateThreshold? number 当差异输出行数超过此阈值时进行截断
 ---@field truncateAnnotation? string 截断时显示的提示文本
