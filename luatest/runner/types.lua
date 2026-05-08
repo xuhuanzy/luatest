@@ -5,20 +5,20 @@
 ---@class SuiteAPI
 ---@overload fun(name: string, fn: function): SuiteCollector
 
----@class TestAPI<ExtraContext: table>
+---@class TestAPI<ExtraContext: table = table>
 ---@overload fun(name: string, fn: function)
 
 ---@alias SuiteFactory fun(test: TestAPI) 工厂函数
 
 ---@alias TaskState RunMode | "pass" | "fail"
 
----@class SuiteCollector<ExtraContext: table>
+---@class SuiteCollector<ExtraContext: table = table>
 ---@field type "collector"                                   -- 类型标识
 ---@field name string                                        -- 套件名称
 ---@field mode RunMode                                       -- 运行模式
 ---@field options? TestOptions                               -- 测试选项
 ---@field test TestAPI                                       -- 与当前套件关联的 `test` API
----@field tasks (Test|Suite<ExtraContext>|SuiteCollector<ExtraContext>)[]                -- 子任务列表
+---@field tasks (Suite|Test<ExtraContext>|SuiteCollector<ExtraContext>)[]                -- 子任务列表
 ---@field file? File                                         -- 所属文件
 ---@field suite? Suite                                       -- 父 Suite
 ---@field task fun(name: string, options?: TaskCustomOptions): Test  -- 创建测试
@@ -82,7 +82,7 @@
 ---@field onFinished OnTestFinishedHandler[]? 任务完成后运行的钩子. 执行顺序取决于 `sequence.hooks` 配置
 
 -- Test 任务类型
----@class Test<ExtraContext: table>: TaskPopulated
+---@class Test<ExtraContext extends table = table>: TaskPopulated
 ---@field type "test" 任务类型
 ---@field context TestContext 将传递给测试函数的测试上下文
 ---@field annotations TestAnnotation[] 自定义注解数组
@@ -177,12 +177,12 @@
 
 ---@alias AfterAllListener fun(suite: Suite|File) 在所有测试后运行的钩子
 
----@alias BeforeEachListener<ExtraContext: table> fun(context: TestContext & ExtraContext, suite: Suite) 在每个测试前运行的钩子
+---@alias BeforeEachListener<ExtraContext = table> fun(context: TestContext & ExtraContext, suite: Suite) 在每个测试前运行的钩子
 
----@alias AfterEachListener<ExtraContext: table> fun(context: TestContext & ExtraContext, suite: Suite) 在每个测试后运行的钩子
+---@alias AfterEachListener<ExtraContext = table> fun(context: TestContext & ExtraContext, suite: Suite) 在每个测试后运行的钩子
 
 -- 套件钩子集合
----@class SuiteHooks<ExtraContext: table>
+---@class SuiteHooks<ExtraContext = table>
 ---@field beforeAll BeforeAllListener[] 所有测试前的钩子数组
 ---@field afterAll AfterAllListener[] 所有测试后的钩子数组
 ---@field beforeEach BeforeEachListener[] 每个测试前的钩子数组

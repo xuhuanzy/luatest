@@ -49,7 +49,7 @@ local REGISTERED_MOCKS = setmetatable({}, { __mode = "k" })
 ---@type table<Mock, MockConfig>  @mock 实例与配置的映射表
 local MOCK_CONFIGS = setmetatable({}, { __mode = "k" })
 
----@class Mock<T>
+---@class Mock<T = Procedure>
 ---@field package state MockContext
 ---@field package config MockConfig
 ---@field mock MockContext<T>
@@ -112,7 +112,7 @@ end
 ---返回下一次执行所使用的实现函数
 ---@return Procedure
 function Mock:getMockImplementation()
-    return self.config.onceMockImplementations[1] or self.config.mockImplementation
+    return self.config.onceMockImplementations[1] --[[@as -table]] or self.config.mockImplementation --[[@as  -table]]
 end
 
 --- 设置模拟实现

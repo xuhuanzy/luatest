@@ -1,4 +1,3 @@
----@diagnostic disable: return-type-mismatch, cast-type-mismatch
 ---@namespace Luatest
 
 local core = require("luatest.core")

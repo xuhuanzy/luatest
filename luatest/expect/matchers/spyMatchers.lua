@@ -146,10 +146,10 @@ local function printReceivedReturns(received, expected)
 end
 
 -- 计算成功返回次数
----@param results MockResult[]
+---@param results MockResult<any>[]
 ---@return integer
 local function countSuccessReturns(results)
-    results = results or {} ---@type MockResult[]
+    results = results or {} ---@type MockResult<any>[]
     local total = 0
     for index = 1, #results do
         if results[index] and results[index].type ~= "throw" then

@@ -8,7 +8,7 @@ local RECEIVED_COLOR = matcherUtils.RECEIVED_COLOR
 ---@namespace Luatest
 
 
----@class Assertion<T>: Matchers<T> & Inverse<Matchers<T>>
+---@class Assertion<T = any>: Matchers<T> & Inverse<Matchers<T>>
 ---@field _obj any 断言目标
 local Assertion = {}
 
@@ -28,7 +28,8 @@ end
 ---@param msg? string 自定义错误消息
 ---@return Assertion
 function Assertion.new(obj, msg)
-    ---@type Assertion
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    ---@type Assertion<any>
     local self = setmetatable({
         _obj = obj,
         __flags = {
@@ -42,6 +43,7 @@ end
 ---@param name string 方法名
 ---@param fn (fun(self: Assertion, ...: any): ExpectationResult) 方法体
 function Assertion.addMethod(name, fn)
+    ---@param self Assertion
     local function wrapAssertionMethod(self, ...)
         local result = fn(self, ...)
         local isNot = flag(self, "negate")
