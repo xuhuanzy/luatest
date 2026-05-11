@@ -5,10 +5,10 @@ local runBaseTests = require("luatest.core.runtime.workers.base").runBaseTests
 
 ---@type LuatestWorker
 local defaultWorker = {
-    runTests = function(state)
+    runTests = function (state)
         runBaseTests("run", state)
     end,
-    collectTests = function(state)
+    collectTests = function (state)
         runBaseTests("collect", state)
     end
 }
@@ -22,7 +22,6 @@ local defaultWorker = {
 ---@field run fun(ctx: WorkerExecuteContext)
 ---@field collect fun(ctx: WorkerExecuteContext)
 
-
 ---@param luatest Luatest
 ---@return WorkerInit
 local function init(luatest)
@@ -30,29 +29,26 @@ local function init(luatest)
     local setupContext
     return {
         ---@param config SerializedConfig
-        start = function(config)
+        start = function (config)
             local rpc = createMethodsRPC(luatest)
-            setupContext = {
-                config = config,
-                rpc = rpc,
-            }
+            setupContext = { config = config, rpc = rpc }
         end,
         ---@param ctx WorkerExecuteContext
-        run = function(ctx)
+        run = function (ctx)
             run({
                 config = setupContext.config,
                 files = ctx.files,
-                rpc = setupContext.rpc,
+                rpc = setupContext.rpc
             }, defaultWorker)
         end,
         ---@param ctx WorkerExecuteContext
-        collect = function(ctx)
+        collect = function (ctx)
             run({
                 files = ctx.files,
                 config = setupContext.config,
-                rpc = setupContext.rpc,
+                rpc = setupContext.rpc
             }, defaultWorker)
-        end,
+        end
     }
 end
 

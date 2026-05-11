@@ -1,6 +1,5 @@
 ---@namespace Luatest
 
----@export namespace
 local export = {}
 
 local KEY = "__LUATEST_BOOTSTRAP_STATE__"
@@ -22,11 +21,7 @@ local function getOrCreate()
     end
 
     ---@type BootstrapState
-    state = {
-        cli = false,
-        running = false,
-        runCount = 0,
-    }
+    state = { cli = false, running = false, runCount = 0 }
     rawset(_G, KEY, state)
     return state
 end
@@ -66,9 +61,8 @@ function export.reset()
     rawset(_G, KEY, {
         cli = false,
         running = false,
-        runCount = 0,
+        runCount = 0
     })
 end
 
 return export
-

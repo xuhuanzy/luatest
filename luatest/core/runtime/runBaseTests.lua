@@ -8,7 +8,6 @@ local nowMs = require("luatest.utils.helpers").nowMs
 
 ---@namespace Luatest
 
----@export namespace
 ---@param method "run" | "collect"
 ---@param files string[]
 ---@param config SerializedConfig

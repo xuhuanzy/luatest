@@ -60,7 +60,7 @@ end
 ---@param suite Suite
 function LuatestTestRunner:onAfterRunSuite(suite)
     if self.config.logHeapUsage then
-        suite.result = suite.result or {} ---@type TaskResult
+        suite.result = suite.result or {} --[[@as TaskResult]]
         suite.result.heap = collectgarbage("count") * 1024
     end
     self.workerState.current = suite.suite or suite.file
@@ -69,7 +69,8 @@ end
 ---@param test Task
 function LuatestTestRunner:onAfterRunTask(test)
     if self.config.logHeapUsage then
-        test.result --[[@cast -?]].heap = collectgarbage("count") * 1024
+        test.result --[[@cast -?]]
+            .heap = collectgarbage("count") * 1024
     end
     self.workerState.current = test.suite or test.file
 end
@@ -98,7 +99,7 @@ function LuatestTestRunner:onBeforeTryTask(test)
         isExpectingAssertionsError = nil,
         expectedAssertionsNumber = nil,
         expectedAssertionsNumberErrorGen = nil,
-        currentTestName = getTestName(test),
+        currentTestName = getTestName(test)
     }, _G[GLOBAL_EXPECT])
 end
 

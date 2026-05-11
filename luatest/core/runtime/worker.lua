@@ -1,12 +1,10 @@
 local throw = require("luatest.utils.error").throw
 ---@namespace Luatest
 
----@export namespace
 local export = {}
 
 ---@type fun()[]
 local globalListeners = {}
-
 
 ---@param method "run" | "collect"
 ---@param ctx WorkerContext
@@ -21,10 +19,10 @@ local function execute(method, ctx, worker)
         evaluatedModules = {},
         durations = {
             prepare = 0,
-            environment = 0,
+            environment = 0
         },
         collectStartTime = 0,
-        onCleanup = function(listener)
+        onCleanup = function (listener)
             globalListeners[#globalListeners + 1] = listener
         end
     }

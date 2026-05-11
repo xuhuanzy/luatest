@@ -1,6 +1,5 @@
 ---@namespace Luatest
 
----@export namespace
 local export = {}
 
 local isWindows = package.config:sub(1, 1) == "\\"
@@ -22,11 +21,11 @@ function export.getCwd()
     if not ok or not handle then
         return "."
     end
-    local okRead, out = pcall(function()
+    local okRead, out = pcall(function ()
         ---@diagnostic disable-next-line: need-check-nil
         return handle:read("*a")
     end)
-    pcall(function()
+    pcall(function ()
         ---@diagnostic disable-next-line: need-check-nil
         handle:close()
     end)

@@ -15,11 +15,7 @@ ModuleRunner.__index = ModuleRunner
 ---@return ModuleRunner
 function ModuleRunner.new(options)
     ---@type Partial<ModuleRunner>
-    local obj = {
-        options = options,
-        evaluator = options.evaluator,
-        evaluatedModules = options.evaluatedModules,
-    }
+    local obj = { options = options, evaluator = options.evaluator, evaluatedModules = options.evaluatedModules }
     return setmetatable(obj, ModuleRunner)
 end
 

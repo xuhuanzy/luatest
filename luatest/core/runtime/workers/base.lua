@@ -4,7 +4,6 @@ local run = require("luatest.core.runtime.runBaseTests")
 local nowMs = require("luatest.utils.helpers").nowMs
 ---@namespace Luatest
 
----@export namespace
 local export = {}
 
 ---@param method "run" | "collect"
@@ -16,7 +15,7 @@ function export.runBaseTests(method, state)
 
     local t0 = nowMs()
     local moduleRunner = startModuleRunner({
-        evaluatedModules = state.evaluatedModules,
+        evaluatedModules = state.evaluatedModules
     })
     state.durations.environment = state.durations.environment + (nowMs() - t0)
     if not moduleRunner then

@@ -6,7 +6,6 @@ local bootstrap = require("luatest.core.bootstrap-state")
 local fs = require("luatest.core.utils.fs")
 local Luatest = require("luatest.core.controller.core")
 
----@export namespace
 local export = {}
 
 ---@class RunOptions
@@ -15,8 +14,8 @@ local export = {}
 ---@field argv? string[]
 ---@field targets? string[] -- CLI positional inputs: files/dirs/globs
 ---@field files? string[]
----@field include? string[]|string
----@field exclude? string[]|string
+---@field include? string[] | string
+---@field exclude? string[] | string
 ---@field reporters? string[]
 ---@field cliOverrides? table
 ---@field configOverrides? table
@@ -51,13 +50,7 @@ end
 
 ---@return RunSummary
 local function emptySummary()
-    return {
-        startAt = nil,
-        durationMs = 0,
-        files = 0,
-        tests = 0,
-        failedTests = 0,
-    }
+    return { startAt = nil, durationMs = 0, files = 0, tests = 0, failedTests = 0 }
 end
 
 ---@param errors any[]
@@ -74,6 +67,7 @@ end
 local function collectRuntimeOverrides(options)
     local overrides = {}
 
+    ---@param from any
     local function merge(from)
         if type(from) ~= "table" then
             return
@@ -109,19 +103,13 @@ function export.run(options)
     local configResult = resolveConfig({
         cwd = options.cwd,
         root = options.root,
-        cliOverrides = collectRuntimeOverrides(options),
+        cliOverrides = collectRuntimeOverrides(options)
     })
 
     if not configResult.ok then
         local errors = configResult.errors or {}
         printErrors(errors, errorStream)
-        return {
-            exitCode = 1,
-            config = configResult.config,
-            state = nil,
-            errors = errors,
-            summary = emptySummary(),
-        }
+        return { exitCode = 1, config = configResult.config, state = nil, errors = errors, summary = emptySummary() }
     end
     ---@cast configResult.config -?
 
@@ -133,32 +121,20 @@ function export.run(options)
         files = options.files,
         targets = options.targets,
         include = config.include,
-        exclude = config.exclude,
+        exclude = config.exclude
     })
 
     if not filesResult.ok then
         local errors = filesResult.errors or {}
         printErrors(errors, errorStream)
-        return {
-            exitCode = 1,
-            config = config,
-            state = nil,
-            errors = errors,
-            summary = emptySummary(),
-        }
+        return { exitCode = 1, config = config, state = nil, errors = errors, summary = emptySummary() }
     end
 
     local files = filesResult.files or {}
 
     if #files == 0 then
         if config.passWithNoTests == true then
-            return {
-                exitCode = 0,
-                config = config,
-                state = nil,
-                errors = {},
-                summary = emptySummary(),
-            }
+            return { exitCode = 0, config = config, state = nil, errors = {}, summary = emptySummary() }
         end
         errorStream:write("No test files found\n")
         errorStream:flush()
@@ -167,22 +143,22 @@ function export.run(options)
             config = config,
             state = nil,
             errors = { { message = "No test files found" } },
-            summary = emptySummary(),
+            summary = emptySummary()
         }
     end
 
     local luatest = Luatest.new({
         root = config.root,
-        projectName = config.name,
+        projectName = config.name
     })
 
     bootstrap.markRunStarted()
-    local ok = pcall(function()
+    local ok = pcall(function ()
         luatest:start({
             files = files,
             config = config,
             outputStream = outputStream,
-            errorStream = errorStream,
+            errorStream = errorStream
         })
     end)
     bootstrap.markRunFinished()
@@ -209,10 +185,9 @@ function export.run(options)
             durationMs = state:getRunDurationMs(),
             files = fileCount,
             tests = testCount,
-            failedTests = failedTests,
-        },
+            failedTests = failedTests
+        }
     }
 end
 
 return export
-

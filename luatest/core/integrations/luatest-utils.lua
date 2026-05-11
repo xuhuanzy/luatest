@@ -1,9 +1,7 @@
 local restoreAllMocks = require("luatest.spy.mock").restoreAllMocks
 ---@namespace Luatest
 
----@export namespace
 local export = {}
-
 
 local _stubsGlobalNilValue = {}
 
@@ -17,7 +15,7 @@ local function createLuaTestUtils()
         -- 我们可以调用`tu.unstubAllGlobals`恢复其原始值.
         ---@param name any
         ---@param value any
-        stubGlobal = function(name, value)
+        stubGlobal = function (name, value)
             -- 如果不为 nil, 说明已经 stub 过
             if _stubsGlobal[name] == nil then
                 local original = _G[name]
@@ -26,26 +24,24 @@ local function createLuaTestUtils()
             _G[name] = value
         end,
         -- 将值重置为首次调用`tu.stubGlobal`之前的值
-        unstubAllGlobals = function()
+        unstubAllGlobals = function ()
             for name, original in pairs(_stubsGlobal) do
                 _G[name] = original == _stubsGlobalNilValue and nil or original
             end
             _stubsGlobal = {}
         end,
-
         -- 该方法会一次性恢复所有由 spyOn 创建的 spy 的原始实现.
-        restoreAllMocks = function()
+        restoreAllMocks = function ()
             restoreAllMocks()
-        end,
+        end
     }
 
     return utils
 end
 
----@export namespace
 export.luatestUtils = createLuaTestUtils()
 -- lua 工具函数
----@export namespace
+
 export.tu = export.luatestUtils
 
 return export

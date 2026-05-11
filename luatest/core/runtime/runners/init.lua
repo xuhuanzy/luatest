@@ -3,7 +3,6 @@ local getWorkerState = require("luatest.core.runtime.utils").getWorkerState
 local rpc = require("luatest.core.runtime.utils").rpc
 ---@namespace Luatest
 
-
 ---@param config SerializedConfig
 ---@param moduleRunner ModuleRunner
 ---@return Runner
@@ -21,7 +20,7 @@ local function resolveTestRunner(config, moduleRunner)
     -- 为自定义的测试运行器添加 rpc 回调
     do
         local originalOnTaskUpdate = testRunner.onTaskUpdate
-        testRunner.onTaskUpdate = function(self, update, events)
+        testRunner.onTaskUpdate = function (self, update, events)
             rpc().onTaskUpdate(update, events)
             if originalOnTaskUpdate then
                 originalOnTaskUpdate(self, update, events)
@@ -31,7 +30,7 @@ local function resolveTestRunner(config, moduleRunner)
 
     do
         local originalOnCollectStart = testRunner.onCollectStart
-        testRunner.onCollectStart = function(self, file)
+        testRunner.onCollectStart = function (self, file)
             rpc().onQueued(file)
             if originalOnCollectStart then
                 originalOnCollectStart(self, file)
@@ -41,7 +40,7 @@ local function resolveTestRunner(config, moduleRunner)
 
     do
         local originalOnCollected = testRunner.onCollected
-        testRunner.onCollected = function(self, files)
+        testRunner.onCollected = function (self, files)
             local state = getWorkerState()
             for _, file in ipairs(files or {}) do
                 file.prepareDuration = state.durations.prepare
@@ -61,7 +60,4 @@ local function resolveTestRunner(config, moduleRunner)
     return testRunner
 end
 
----@export namespace
-return {
-    resolveTestRunner = resolveTestRunner,
-}
+return { resolveTestRunner = resolveTestRunner }

@@ -1,3 +1,4 @@
+---@diagnostic disable: incomplete-signature-doc
 local isLuatestInternalModule = require("luatest.core.runtime.utils").isLuatestInternalModule
 ---@namespace Luatest
 
@@ -33,7 +34,7 @@ local sharedBuiltinModules = {
     ["utf8"] = true,
     ["bit32"] = true,
     ["jit"] = true,
-    ["ffi"] = true,
+    ["ffi"] = true
 }
 
 ---@param moduleName string
@@ -52,7 +53,7 @@ local function createIsolatedRequire(evaluatedModules, fileEnv)
 
     ---@param moduleName string
     ---@return any
-    return function(moduleName)
+    return function (moduleName)
         local cached = evaluatedModules[moduleName]
         if cached ~= nil then
             if cached == LOADING then
@@ -68,12 +69,13 @@ local function createIsolatedRequire(evaluatedModules, fileEnv)
         -- 标记为正在加载
         evaluatedModules[moduleName] = LOADING
 
-        local ok, resultOrErr = pcall(function()
+        local ok, resultOrErr = pcall(function ()
             -- preload
             local preload = fileEnv.package.preload
             if preload then
                 local loader = preload[moduleName]
                 if loader ~= nil then
+                    ---@diagnostic disable-next-line: call-non-callable
                     return loader(moduleName)
                 end
             end
@@ -126,20 +128,20 @@ local function createIsolatedPackageLoaded(evaluatedModules)
 
     local proxy = {}
     setmetatable(proxy, {
-        __index = function(_, key)
+        __index = function (_, key)
             if isSharedModule(key) then
                 return originalLoaded[key]
             end
             return evaluatedModules[key]
         end,
-        __newindex = function(_, key, value)
+        __newindex = function (_, key, value)
             if isSharedModule(key) then
                 originalLoaded[key] = value
             else
                 evaluatedModules[key] = value
             end
         end,
-        __pairs = function(_)
+        __pairs = function (_)
             local merged = {}
             for k, v in pairs(originalLoaded) do
                 if isSharedModule(k) then
@@ -150,7 +152,7 @@ local function createIsolatedPackageLoaded(evaluatedModules)
                 merged[k] = v
             end
             return pairs(merged)
-        end,
+        end
     })
     return proxy
 end
@@ -197,15 +199,17 @@ local function createIsolatedEnv(evaluatedModules)
 
     fileEnv._G = fileEnv
 
-    fileEnv.load = function(ld, chunkname, mode, env)
+    fileEnv.load = function (ld, chunkname, mode, env)
         if env == nil then env = fileEnv end
         return load(ld, chunkname, mode, env)
     end
-    fileEnv.loadfile = function(filename, mode, env)
+    fileEnv.loadfile = function (filename, mode, env)
         if env == nil then env = fileEnv end
         return loadfile(filename, mode, env)
     end
-    fileEnv.dofile = function(filename)
+    ---@param filename string
+    ---@return any
+    fileEnv.dofile = function (filename)
         local chunk, err = fileEnv.loadfile(filename)
         if not chunk then
             error(err, 2)
@@ -217,7 +221,7 @@ local function createIsolatedEnv(evaluatedModules)
         loaded = isolatedLoaded,
         preload = package.preload,
         path = package.path,
-        cpath = package.cpath,
+        cpath = package.cpath
     }, { __index = package })
 
     fileEnv.require = createIsolatedRequire(evaluatedModules, fileEnv)

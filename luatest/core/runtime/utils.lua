@@ -2,7 +2,6 @@
 
 local NAME_WORKER_STATE = {}
 
----@export namespace
 local export = {}
 
 -- 获取当前工作状态
