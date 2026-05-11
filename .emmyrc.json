@@ -2,10 +2,14 @@
   "codeLens": {
     "enable": false
   },
+  "completion": {
+    "baseFunctionIncludesName": false
+  },
   "diagnostics": {
     "disable": [
       "unnecessary-if",
-      "unnecessary-assert"
+      "unnecessary-assert",
+      "unresolved-require"
     ],
     "enables": [
       "incomplete-signature-doc",
@@ -24,19 +28,18 @@
   "references": {
     "fuzzySearch": false
   },
+  "runtime": {
+    "version": "Lua5.4"
+  },
   "strict": {
     "arrayIndex": false,
     "docBaseConstMatchBaseType": true,
     "metaOverrideFileDefine": true,
-    "requirePath": true,
-    "requireExportGlobal": true
+    "requirePath": true
   },
   "workspace": {
     "enableReindex": true,
-    "packageDirs": [],
+    "packages": [],
     "reindexDuration": 5000
-  },
-  "completion": {
-    "baseFunctionIncludesName": false
   }
 }

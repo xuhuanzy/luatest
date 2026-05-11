@@ -21,7 +21,7 @@
 --- 匹配器接口
 ---@class (partial) Matchers<T>
 ---@field toBe fun(self: self, expected: any) 断言实际值与预期值是否相等(a == b). 如需深度比较, 请使用 {@link Luatest.Matchers.toEqual}.
----@field toBeTypeOf fun(self: self, expected: "nil"|"number"|"string"|"boolean"|"table"|"function"|"thread"|"userdata") 断言实际值是否属于接收类型
+---@field toBeTypeOf fun(self: self, expected: "nil" | "number" | "string" | "boolean" | "table" | "function" | "thread" | "userdata") 断言实际值是否属于接收类型
 ---@field toBeInteger fun(self: self) 实际值是否为整数
 ---@field toBeNil fun(self: self) 断言实际值是否为`nil`
 ---@field toBeDefined fun(self: self) 断言实际值是否已定义(不为`nil`)
@@ -52,7 +52,6 @@
 ---@field toHaveLastReturnedWith fun(self: self, ...: any) 检查函数最后一次返回的值是否与给定实参相同. 需要将一个 spy 函数传递给 `expect`.
 ---@field toHaveNthReturnedWith fun(self: self, nth: integer, ...: any) 检查函数第 n 次返回的值是否与给定实参相同. 需要将一个 spy 函数传递给 `expect`.
 
-
 --- 非对称匹配器
 ---@class AsymmetricMatcher
 ---@field asymmetricMatch fun(other: any): boolean
@@ -67,7 +66,7 @@
 ---@field arrayContaining fun(sample: any[]): AsymmetricMatcher
 ---@field arrayOf fun(sample: unknown): AsymmetricMatcher
 ---@field closeTo fun(sample: number, precision?: number): AsymmetricMatcher
----@field objectContaining fun(sample: {[string]: any}): AsymmetricMatcher
+---@field objectContaining fun(sample: { [string]: any }): AsymmetricMatcher
 ---@field stringContaining fun(sample: string): AsymmetricMatcher
 ---@field stringMatching fun(sample: string): AsymmetricMatcher
 
@@ -85,8 +84,6 @@
 ---@field isExpectingAssertionsError? Error 期待断言错误信息
 ---@field isNot boolean 是否取反
 ---@field suppressedErrors Error[] 被抑制的错误数组
----@field testPath? string|(fun(): string?) 测试文件路径
+---@field testPath? string | (fun(): string?) 测试文件路径
 ---@field soft? boolean 是否为软断言模式
 ---@field task? table 当前测试任务(只读)
-
-

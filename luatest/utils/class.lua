@@ -1,13 +1,12 @@
 ---@namespace Luatest
 
-
 local export = {}
 
 ---@class Class
 ---@field __name string
 ---@field package __super? Class
 ---@field package __index any
----@field super fun<Super>(obj: table, ...: ConstructorParameters<Super>...)
+---@field super fun<TClass>(obj: TClass, ...: ConstructorParameters<Exclude<TClass["__superclass"], nil>>...)
 ---@field new fun(...: ConstructorParameters<self>...): self
 
 ---@type table<string, Class>
@@ -40,7 +39,7 @@ local function resolveClass(name)
     return class
 end
 
----@param nameOrClass string|Class
+---@param nameOrClass string | Class
 ---@return Class
 local function normalizeClass(nameOrClass)
     if type(nameOrClass) == "string" then
@@ -64,10 +63,7 @@ function export.class(name, super)
 
     ---@diagnostic disable-next-line: missing-fields
     ---@type Class
-    local class = {
-        __name = name,
-        __super = superClass,
-    }
+    local class = { __name = name, __super = superClass }
 
     class.__index = class
 
@@ -99,7 +95,7 @@ end
 
 -- 实例化一个类
 ---@generic T
----@param name `T`|T 类名
+---@param name `T` | T 类名
 ---@param ... ConstructorParameters<T>... 构造函数参数
 ---@return T
 function export.new(name, ...)

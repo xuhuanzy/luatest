@@ -5,12 +5,11 @@ local MATCHERS_OBJECT = require("luatest.expect.constants").MATCHERS_OBJECT
 if not _G[MATCHERS_OBJECT] then
     ---@type table<ExpectStatic, MatcherState>
     local globalState = setmetatable({}, {
-        __mode = "k",
+        __mode = "k"
     })
 
     _G[MATCHERS_OBJECT] = globalState
 end
-
 
 local export = {}
 
